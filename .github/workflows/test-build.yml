@@ -1,0 +1,55 @@
+name: Test build
+# A portable Windows build of every branch pushed to this fork, to try changes before they're merged.
+#
+# Download it from the run's page (Actions > Test build > the run > Artifacts), unzip it anywhere and run
+# QuiverLauncher.exe. The portable.txt beside it keeps its data in a "data" folder there, apart from an installed
+# Quiver Launcher's, so a test build can run alongside it without touching its library or settings.
+#
+# Unlike a release it has no update key (it can't replace itself with an official release), no code signing (Windows
+# SmartScreen warns: More info > Run anyway), and sends no usage data or error reports.
+on:
+  push:
+    branches: ["**"]
+    paths-ignore: ["**.md", "docs/**"]
+  # Or by hand: Actions > Test build > Run workflow, on any branch.
+  workflow_dispatch:
+
+# A newer push to a branch replaces the build still running for the older one.
+concurrency:
+  group: test-build-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  windows:
+    runs-on: windows-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22, cache: pnpm }
+      - uses: dtolnay/rust-toolchain@stable
+      # The same release build as CI's installer job and the release workflow, so they share a cache.
+      - uses: Swatinem/rust-cache@v2
+        with: { workspaces: apps/launcher/src-tauri, shared-key: windows-release }
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter @quiver/launcher tauri build --no-bundle
+      - name: Portable zip
+        id: zip
+        run: |
+          $sha = "${{ github.sha }}".Substring(0, 7)
+          $branch = "${{ github.ref_name }}" -replace '[^A-Za-z0-9._-]', '-'
+          New-Item -ItemType Directory portable | Out-Null
+          Copy-Item apps\launcher\src-tauri\target\release\quiver-launcher.exe portable\QuiverLauncher.exe
+          New-Item -ItemType File portable\portable.txt | Out-Null
+          echo "name=QuiverLauncher-test-$branch-$sha" >> $env:GITHUB_OUTPUT
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ${{ steps.zip.outputs.name }}
+          path: portable/
+          retention-days: 14
+      - name: Where to get it
+        run: echo "### Portable Windows build ready`nDownload **${{ steps.zip.outputs.name }}** under Artifacts at the bottom of this page, unzip it and run QuiverLauncher.exe." >> $env:GITHUB_STEP_SUMMARY
