@@ -2,7 +2,7 @@
  * Settings › Cache (cache.ts): whether the download cache keeps anything and what, how much room it has, where it is,
  * what's in it now, and, for the modes that download by themselves, how that's going.
  */
-import { useCallback, useEffect, useState, type ReactNode } from "react";
+import { useCallback, useEffect, useLayoutEffect, useRef, useState, type ReactNode } from "react";
 import { Archive, Ban, Download, FolderOpen, HardDrive, Layers, ListChecks, TriangleAlert, X } from "lucide-react";
 import { plural, t } from "@lingui/core/macro";
 import { Trans } from "@lingui/react/macro";
@@ -16,6 +16,8 @@ import { native, type CachedFile, type CacheStatus } from "./native";
 import type { Entry } from "@quiverlauncher/api";
 import { Artwork, cardSources, coverOf } from "@quiverlauncher/ui";
 import { useLauncher } from "./store";
+import { pageArea } from "./spatial";
+import { boxZoom } from "./zoom";
 
 const ICONS: Record<CacheMode, ReactNode> = {
   none: <Ban size={22} aria-hidden="true" />,
@@ -267,6 +269,8 @@ function SelectedTitles({ apps, kept, onRemove }: { apps: { id: string; slug: st
       );
     }
   }, [apps.map((a) => a.id).join()]); // eslint-disable-line react-hooks/exhaustive-deps
+  const list = useRef<HTMLUListElement>(null);
+  useFittedList(list, apps.length);
   const rows = apps
     .map((app) => {
       const files = kept.filter((f) => f.apps.some((o) => o.app === app.id));
@@ -283,7 +287,7 @@ function SelectedTitles({ apps, kept, onRemove }: { apps: { id: string; slug: st
           <Trans>No titles chosen yet. Open an app's page, then Manage, and turn on Keep in download cache.</Trans>
         </p>
       ) : (
-        <ul className="cache-titles" aria-label={t`Titles kept in the download cache`}>
+        <ul ref={list} className="cache-titles" aria-label={t`Titles kept in the download cache`}>
           {rows.map(({ app, entry, bytes, files }) => {
             const shown = entry?.projectName ?? app.slug;
             const size = sizeLabel(bytes);
@@ -311,6 +315,58 @@ function SelectedTitles({ apps, kept, onRemove }: { apps: { id: string; slug: st
       )}
     </div>
   );
+}
+
+/** The fewest rows the list shows, however short the window: below that, the page scrolls instead. */
+const FEWEST_ROWS = 3;
+/** A little room left under the list besides the page's own padding. */
+const SLACK = 8;
+
+/** What the page has under an element: what follows it, and its boxes' padding, borders and margins to the page's foot. */
+function spaceUnder(el: HTMLElement, area: HTMLElement) {
+  let under = 0;
+  for (let n: HTMLElement | null = el; n && n !== area; n = n.parentElement) {
+    const style = getComputedStyle(n);
+    under += parseFloat(style.marginBottom) || 0;
+    if (n !== el) under += (parseFloat(style.paddingBottom) || 0) + (parseFloat(style.borderBottomWidth) || 0);
+    for (let next = n.nextElementSibling; next; next = next.nextElementSibling) under += (next as HTMLElement).offsetHeight || 0;
+  }
+  return under + (parseFloat(getComputedStyle(area).paddingBottom) || 0);
+}
+
+/**
+ * Fits a list of rows to the window: as tall as the room from where it starts down to the window's foot, and no less
+ * than FEWEST_ROWS, then down to a whole number of rows, so none shows cut off; the rest scroll inside it. Measured
+ * again as the window or the list changes size, in the page's pixels (the interface size zooms them: zoom.ts).
+ */
+function useFittedList(list: React.RefObject<HTMLUListElement | null>, count: number) {
+  useLayoutEffect(() => {
+    const el = list.current;
+    if (!el) return;
+    const fit = () => {
+      const first = el.firstElementChild as HTMLElement | null;
+      if (!first) return;
+      const area = pageArea();
+      const z = boxZoom();
+      const row = first.offsetHeight;
+      const gap = parseFloat(getComputedStyle(el).rowGap) || 0;
+      // Where the list starts in the page, as if scrolled to the top, and the room from there to the window's foot.
+      const top = (el.getBoundingClientRect().top - area.getBoundingClientRect().top) / z + area.scrollTop;
+      const room = area.clientHeight - top - spaceUnder(el, area) - SLACK;
+      const fits = Math.max(FEWEST_ROWS, Math.floor((room + gap) / (row + gap)));
+      const height = fits >= count ? "" : `${fits * row + (fits - 1) * gap}px`;
+      if (el.style.maxHeight !== height) el.style.maxHeight = height;
+    };
+    fit();
+    window.addEventListener("resize", fit);
+    const observer = typeof ResizeObserver === "undefined" ? null : new ResizeObserver(fit);
+    observer?.observe(pageArea());
+    if (el.firstElementChild) observer?.observe(el.firstElementChild);
+    return () => {
+      window.removeEventListener("resize", fit);
+      observer?.disconnect();
+    };
+  }, [list, count]);
 }
 
 /**

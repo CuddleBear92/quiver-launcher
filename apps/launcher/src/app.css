@@ -546,10 +546,10 @@ main.app-main { padding: 0 0 40px; }
 .cache-clear { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; font-size: 13px; }
 .cache-titles-box { display: grid; gap: 8px; margin-top: 8px; padding-top: 14px; border-top: 1px solid var(--line); }
 .cache-titles-box h4 { margin: 0; }
-/* About six rows show; more scroll inside the box. */
+/* Down to the window's foot, in whole rows (cache-page.tsx useFittedList); more scroll inside the box. */
 .cache-titles .download-names { flex: 1; min-width: 0; }
 .cache-titles .download-action { flex: none; width: auto; min-width: 0; margin-left: auto; }
-.cache-titles { display: grid; gap: 6px; max-height: 470px; margin: 0; padding: 0 4px 0 0; overflow-y: auto; list-style: none; }
+.cache-titles { display: grid; gap: 6px; margin: 0; padding: 0 4px 0 0; overflow-y: auto; list-style: none; }
 .cache-folder, .cache-fetch { flex-wrap: wrap; }
 .download-cache > .text-button { justify-self: start; }
 /* Keep in download cache, on an app's Manage tab: a row as tall as the actions beside it. */
