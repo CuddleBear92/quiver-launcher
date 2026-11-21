@@ -37,7 +37,7 @@ msgstr "{0, plural, one {# app sigue en {1}. Las nuevas van en la carpeta nueva.
 #. placeholder {0}: s.apps
 #: ../../apps/launcher/src/cache-page.tsx
 msgid "{0, plural, one {# app looked at} other {# apps looked at}}"
-msgstr ""
+msgstr "{0, plural, one {# app revisada} other {# apps revisadas}}"
 
 #. placeholder {0}: ids.length
 #: ../../apps/launcher/src/library-ticking.tsx
@@ -72,17 +72,17 @@ msgstr "{0, plural, one {# comentario} other {# comentarios}}"
 #. placeholder {0}: s.failed
 #: ../../apps/launcher/src/cache-page.tsx
 msgid "{0, plural, one {# file couldn't be downloaded} other {# files couldn't be downloaded}}"
-msgstr ""
+msgstr "{0, plural, one {No se pudo descargar # archivo} other {No se pudieron descargar # archivos}}"
 
 #. placeholder {0}: s.noRoom
 #: ../../apps/launcher/src/cache-page.tsx
 msgid "{0, plural, one {# file didn't fit in the storage limit} other {# files didn't fit in the storage limit}}"
-msgstr ""
+msgstr "{0, plural, one {# archivo no cupo en el límite de almacenamiento} other {# archivos no cupieron en el límite de almacenamiento}}"
 
 #. placeholder {0}: s.fetched
 #: ../../apps/launcher/src/cache-page.tsx
 msgid "{0, plural, one {# file kept} other {# files kept}}"
-msgstr ""
+msgstr "{0, plural, one {# archivo guardado} other {# archivos guardados}}"
 
 #. placeholder {0}: backup.files
 #. placeholder {0}: copy.files
@@ -101,7 +101,7 @@ msgstr "{0, plural, one {# app instalada aún no está en la carpeta de su siste
 #. placeholder {0}: s.fetched
 #: ../../apps/launcher/src/cache-page.tsx
 msgid "{0, plural, one {# new file kept} other {# new files kept}}"
-msgstr ""
+msgstr "{0, plural, one {# archivo nuevo guardado} other {# archivos nuevos guardados}}"
 
 #. placeholder {0}: portable.length
 #: ../../apps/launcher/src/library-ticking.tsx
@@ -428,7 +428,7 @@ msgstr "{filters, plural, one {# filtro de etiquetas, como playlist} other {# fi
 #. A storage size in gigabytes
 #: ../../apps/launcher/src/cache-page.tsx
 msgid "{gb} GB"
-msgstr ""
+msgstr "{gb} GB"
 
 #. A mod's version on this computer: v1.2 installed
 #: ../../apps/launcher/src/mods.tsx
@@ -802,7 +802,7 @@ msgstr "{tagged, plural, one {Las etiquetas que le pusiste a # app} other {Las e
 #. A storage size in terabytes
 #: ../../apps/launcher/src/cache-page.tsx
 msgid "{tb} TB"
-msgstr ""
+msgstr "{tb} TB"
 
 #: ../../apps/launcher/src/sync-folder-page.tsx
 msgid "{there, plural, one {This folder already has saves of # app. Quiver offers them when you start it here.} other {This folder already has saves of # apps. Quiver offers them when you start those apps here.}}"
@@ -850,11 +850,11 @@ msgstr "{used} de {limit} en uso. Cada app conserva sus {keep} copias más recie
 
 #: ../../apps/launcher/src/cache-page.tsx
 msgid "{usedLabel} of {limitLabel} used"
-msgstr ""
+msgstr "{usedLabel} de {limitLabel} en uso"
 
 #: ../../apps/launcher/src/cache-page.tsx
 msgid "{usedLabel} used"
-msgstr ""
+msgstr "{usedLabel} en uso"
 
 #: ../../apps/launcher/src/App.tsx
 msgid "{verifiedVersion} · downloads can't be checked"
@@ -867,6 +867,14 @@ msgstr "{verifiedVersion} · sin revisar por Quiver"
 #: ../../apps/launcher/src/App.tsx
 msgid "{verifiedVersion} · withdrawn"
 msgstr "{verifiedVersion} · retirada"
+
+#: ../../apps/launcher/src/downloads-page.tsx
+msgid "{version} · {file}"
+msgstr "{version} · {file}"
+
+#: ../../apps/launcher/src/downloads-page.tsx
+msgid "{version} · {file} · {received} of {size}"
+msgstr "{version} · {file} · {received} de {size}"
 
 #: ../../apps/launcher/src/store.tsx
 msgid "{version} can't be installed again: its release isn't available any more."
@@ -1387,7 +1395,7 @@ msgstr "App"
 
 #: ../../apps/launcher/src/cache-page.tsx
 msgid "App {looked} of {of}"
-msgstr ""
+msgstr "App {looked} de {of}"
 
 #: ../../apps/launcher/src/detail.tsx
 msgid "App details"
@@ -1736,7 +1744,7 @@ msgstr "Por nombre"
 #. Settings section: the download cache
 #: ../../apps/launcher/src/settings-page.tsx
 msgid "Cache"
-msgstr ""
+msgstr "Caché"
 
 #: ../../apps/launcher/src/game.tsx
 msgid "Called {title} in {region}"
@@ -1868,8 +1876,9 @@ msgid "Check for updates"
 msgstr "Buscar actualizaciones"
 
 #: ../../apps/launcher/src/cache-page.tsx
+#: ../../apps/launcher/src/downloads-page.tsx
 msgid "Check now"
-msgstr ""
+msgstr "Revisar ahora"
 
 #: ../../apps/launcher/src/own-copy-setup.tsx
 msgid "Check yours"
@@ -1877,7 +1886,7 @@ msgstr "Revisa la tuya"
 
 #: ../../apps/launcher/src/cache-page.tsx
 msgid "Checked {finished}"
-msgstr ""
+msgstr "Revisado {finished}"
 
 #: ../../apps/launcher/src/settings-page.tsx
 msgid "Checking the folder"
@@ -1935,7 +1944,7 @@ msgstr "Elige una carpeta para {name}"
 
 #: ../../apps/launcher/src/cache-page.tsx
 msgid "Choose a folder for the download cache"
-msgstr ""
+msgstr "Elige una carpeta para la caché de descargas"
 
 #: ../../apps/launcher/src/store.tsx
 msgid "Choose a folder outside {name}, which is an app's own folder."
@@ -2157,11 +2166,15 @@ msgstr "Limpiar todo"
 
 #: ../../apps/launcher/src/cache-page.tsx
 msgid "Clear cache"
-msgstr ""
+msgstr "Vaciar caché"
 
 #: ../../apps/launcher/src/cache-page.tsx
 msgid "Clear cache…"
-msgstr ""
+msgstr "Vaciar caché…"
+
+#: ../../apps/launcher/src/downloads-page.tsx
+msgid "Clear list"
+msgstr "Limpiar lista"
 
 #: ../../apps/launcher/src/App.tsx
 #: ../../apps/launcher/src/library.tsx
@@ -2302,9 +2315,17 @@ msgstr "Control"
 msgid "Controllers"
 msgstr "Controles"
 
+#: ../../apps/launcher/src/downloads-page.tsx
+msgid "Copied"
+msgstr "Copiado"
+
 #: ../../apps/launcher/src/saves-tab.tsx
 msgid "Copied to your sync folder."
 msgstr ""
+
+#: ../../apps/launcher/src/downloads-page.tsx
+msgid "Copy details"
+msgstr "Copiar detalles"
 
 #: ../../apps/launcher/src/library.tsx
 msgid "Copy link"
@@ -2320,11 +2341,15 @@ msgstr "Copiando {folder}… {percent}%"
 
 #: ../../apps/launcher/src/cache-page.tsx
 msgid "Couldn't clear the cache. Is its drive connected?"
-msgstr ""
+msgstr "No se pudo vaciar la caché. ¿Está conectada su unidad?"
 
 #: ../../apps/launcher/src/discussions.tsx
 msgid "Couldn't delete it. Try again."
 msgstr "No se pudo eliminar. Inténtalo de nuevo."
+
+#: ../../apps/launcher/src/downloads-page.tsx
+msgid "Couldn't download"
+msgstr "No se pudo descargar"
 
 #: ../../apps/launcher/src/store.tsx
 msgid "Couldn't get the saves in your sync folder. The app starts with the saves on this computer."
@@ -2628,13 +2653,15 @@ msgid "Downgrade to {version}"
 msgstr "Volver a {version}"
 
 #. Heading in Settings: a folder of downloaded release files, kept to install again and as a backup
+#. Section of Downloads: the files the download cache downloads by itself
 #: ../../apps/launcher/src/cache-page.tsx
+#: ../../apps/launcher/src/downloads-page.tsx
 msgid "Download cache"
-msgstr ""
+msgstr "Caché de descargas"
 
 #: ../../apps/launcher/src/cache-page.tsx
 msgid "Download cache used"
-msgstr ""
+msgstr "Caché de descargas en uso"
 
 #: ../../apps/launcher/src/App.tsx
 #: ../../apps/launcher/src/downloads-page.tsx
@@ -2662,16 +2689,18 @@ msgstr "Descargando {count, plural, one {# app} other {# apps}}."
 #. Download cache: the app and version it's downloading by itself now
 #: ../../apps/launcher/src/cache-page.tsx
 msgid "Downloading {name} {version}"
-msgstr ""
+msgstr "Descargando {name} {version}"
 
 #: ../../apps/launcher/src/App.tsx
 #: ../../apps/launcher/src/card-menu.tsx
+#: ../../apps/launcher/src/downloads-page.tsx
 #: ../../apps/launcher/src/library-sidebar.tsx
 msgid "Downloading {percent}%"
 msgstr "Descargando {percent}%"
 
 #: ../../apps/launcher/src/App.tsx
 #: ../../apps/launcher/src/card-menu.tsx
+#: ../../apps/launcher/src/downloads-page.tsx
 msgid "Downloading…"
 msgstr "Descargando…"
 
@@ -2687,7 +2716,7 @@ msgstr "Descarga {only}"
 
 #: ../../apps/launcher/src/cache-page.tsx
 msgid "Downloads start shortly after Quiver opens, then every 6 hours."
-msgstr ""
+msgstr "Las descargas empiezan poco después de abrir Quiver y luego cada 6 horas."
 
 #: ../../apps/launcher/src/downloads-page.tsx
 msgid "Downloads that finish while Quiver Launcher is open show here."
@@ -2812,7 +2841,7 @@ msgstr "Todas las consolas"
 #. Download cache mode: the newest release of every app in the catalog
 #: ../../apps/launcher/src/cache.ts
 msgid "Every latest"
-msgstr ""
+msgstr "Lo más nuevo de todo"
 
 #: ../../apps/launcher/src/tag-settings.tsx
 msgid "Every tag is hidden."
@@ -2926,7 +2955,7 @@ msgstr "Para una app que el catálogo no tiene. Es solo tuya; para agregar una p
 
 #: ../../apps/launcher/src/cache.ts
 msgid "For archiving only. Every version of every app can need terabytes of storage and a very long time to download."
-msgstr ""
+msgstr "Solo para archivar. Cada versión de cada app puede necesitar terabytes de almacenamiento y mucho tiempo para descargarse."
 
 #: ../../apps/launcher/src/correction.tsx
 msgid "For example: it starts the level editor instead of the game, or it needs the US version of the game."
@@ -3083,6 +3112,10 @@ msgstr "Ir a Comunidad"
 #: ../../apps/launcher/src/settings-page.tsx
 msgid "Goes in {to}"
 msgstr "Va en {to}"
+
+#: ../../apps/launcher/src/downloads-page.tsx
+msgid "Gone from where it was published"
+msgstr "Ya no está donde se publicó"
 
 #: ../../apps/launcher/src/own-copy-setup.tsx
 msgid "Good copy"
@@ -3253,7 +3286,7 @@ msgstr "Ocultar tu opinión sobre {name}"
 #. Download cache mode: every release of every app, to archive them
 #: ../../apps/launcher/src/cache.ts
 msgid "Hoarder"
-msgstr ""
+msgstr "Acumulador"
 
 #: ../../apps/launcher/src/repository-tokens.tsx
 msgid "Host"
@@ -3710,12 +3743,12 @@ msgstr "Conservar {keep}"
 #. Download cache setting: keep a release's builds for Windows, Linux, macOS and Android, not only this computer's
 #: ../../apps/launcher/src/cache-page.tsx
 msgid "Keep every system's files"
-msgstr ""
+msgstr "Guardar los archivos de todos los sistemas"
 
 #. Toggle on an app's Manage tab: the download cache keeps this app's newest release
 #: ../../apps/launcher/src/cache-page.tsx
 msgid "Keep in download cache"
-msgstr ""
+msgstr "Guardar en la caché de descargas"
 
 #: ../../apps/launcher/src/settings-page.tsx
 msgid "Keep Quiver open until it's done."
@@ -3727,7 +3760,7 @@ msgstr "Mantén Quiver abierto hasta que termine. La copia anterior de cada app 
 
 #: ../../apps/launcher/src/cache-page.tsx
 msgid "Keep the files Quiver downloads, to install them again without downloading, even offline, and as a backup of what was released. Each file is checked against the catalog before it's installed."
-msgstr ""
+msgstr "Guarda los archivos que Quiver descarga para volver a instalarlos sin descargarlos, incluso sin conexión, y como respaldo de lo publicado. Cada archivo se compara con el catálogo antes de instalarse."
 
 #: ../../apps/launcher/src/github-token.tsx
 #: ../../apps/launcher/src/gitlab-token.tsx
@@ -3753,19 +3786,24 @@ msgstr ""
 
 #: ../../apps/launcher/src/cache.ts
 msgid "Keeps every release of every app in the catalog, to archive them."
-msgstr ""
+msgstr "Guarda cada versión de cada app del catálogo, para archivarlas."
 
 #: ../../apps/launcher/src/cache.ts
 msgid "Keeps the file of each app as you install it. An app's newer version takes the place of the one before."
-msgstr ""
+msgstr "Guarda el archivo de cada app al instalarla. La versión nueva de una app reemplaza a la anterior."
 
 #: ../../apps/launcher/src/cache.ts
 msgid "Keeps the newest release of every app in the catalog, downloading them in the background."
-msgstr ""
+msgstr "Guarda la versión más reciente de cada app del catálogo, descargándolas en segundo plano."
 
 #: ../../apps/launcher/src/cache.ts
 msgid "Keeps the newest release of the apps you choose, from Manage on each app's page."
-msgstr ""
+msgstr "Guarda la versión más reciente de las apps que elijas, desde Administrar en la página de cada app."
+
+#. Downloads, Download cache: a file it downloaded and kept, and when
+#: ../../apps/launcher/src/downloads-page.tsx
+msgid "Kept {version} · {file} · {when}"
+msgstr "{version} guardada · {file} · {when}"
 
 #: ../../apps/launcher/src/settings-page.tsx
 msgid "Kept here from before."
@@ -4017,7 +4055,11 @@ msgstr "Buscar"
 #. Download cache: the app whose releases it's reading
 #: ../../apps/launcher/src/cache-page.tsx
 msgid "Looking at {name}"
-msgstr ""
+msgstr "Revisando {name}"
+
+#: ../../apps/launcher/src/downloads-page.tsx
+msgid "Looking for files to keep…"
+msgstr "Buscando archivos para guardar…"
 
 #: ../../apps/launcher/src/card-menu.tsx
 msgid "Looking for programs…"
@@ -4413,7 +4455,7 @@ msgstr "Discusiones nuevas"
 
 #: ../../apps/launcher/src/cache-page.tsx
 msgid "New files go in this folder. Files already in the old one stay there."
-msgstr ""
+msgstr "Los archivos nuevos van en esta carpeta. Los que ya están en la anterior se quedan allí."
 
 #: ../../apps/launcher/src/setup.tsx
 msgid "New in Quiver Launcher 4"
@@ -4593,7 +4635,7 @@ msgstr "Ninguna etiqueta coincide con tu búsqueda."
 
 #: ../../apps/launcher/src/cache-page.tsx
 msgid "No titles chosen yet. Open an app's page, then Manage, and turn on Keep in download cache."
-msgstr ""
+msgstr "Todavía no elegiste títulos. Abre la página de una app, luego Administrar, y activa Guardar en la caché de descargas."
 
 #: ../../apps/launcher/src/feedback.tsx
 msgid "Nobody has said yet. Be the first."
@@ -4752,6 +4794,10 @@ msgstr "No se muestra a otros jugadores"
 msgid "Not sure"
 msgstr "No sé"
 
+#: ../../apps/launcher/src/downloads-page.tsx
+msgid "Not the file Quiver checked"
+msgstr "No es el archivo que Quiver verificó"
+
 #: ../../apps/launcher/src/saves-tab.tsx
 msgid "Not there yet. It's made when the app first saves."
 msgstr "Aún no existe. Se crea cuando la app guarda por primera vez."
@@ -4801,7 +4847,7 @@ msgstr "No hay nada descargándose."
 
 #: ../../apps/launcher/src/cache.ts
 msgid "Nothing is kept. Each install downloads its files."
-msgstr ""
+msgstr "No se guarda nada. Cada instalación descarga sus archivos."
 
 #: ../../apps/launcher/src/old-library.tsx
 msgid "Nothing is moved or copied: your installed apps stay where Quiver Launcher 3 put them, and play from there. Keep your Quiver Launcher 3 folder for now, as deleting it would delete them. Once you've tried Quiver Launcher 4, you can move them into Quiver's apps folder in Settings › Apps folder."
@@ -4813,7 +4859,7 @@ msgstr "No se mueve, copia ni borra nada, y tu carpeta de Quiver Launcher 3 qued
 
 #: ../../apps/launcher/src/cache-page.tsx
 msgid "Nothing kept yet."
-msgstr ""
+msgstr "Todavía no se guardó nada."
 
 #: ../../apps/launcher/src/App.tsx
 msgid "Nothing matches that search and those filters."
@@ -5684,7 +5730,7 @@ msgstr "¿Quitar todas las copias de {name} de tu cuenta? Las partidas guardadas
 
 #: ../../apps/launcher/src/cache-page.tsx
 msgid "Remove every file in the download cache? Installed apps aren't affected."
-msgstr ""
+msgstr "¿Quitar todos los archivos de la caché de descargas? Las apps instaladas no se ven afectadas."
 
 #: ../../apps/launcher/src/library.tsx
 msgid "Remove filter {on}"
@@ -5722,6 +5768,11 @@ msgstr "Quitar esta copia de tu cuenta"
 #: ../../apps/launcher/src/repository-tokens.tsx
 msgid "Remove token"
 msgstr "Quitar token"
+
+#. Downloads, Download cache: the file went as it downloaded, as antivirus software (Windows Defender) removes a file it flags
+#: ../../apps/launcher/src/downloads-page.tsx
+msgid "Removed by your antivirus"
+msgstr "Quitado por tu antivirus"
 
 #. The GitHub token was removed
 #. The GitLab token was removed
@@ -6113,7 +6164,7 @@ msgstr "Apps seleccionadas"
 #. Download cache mode
 #: ../../apps/launcher/src/cache.ts
 msgid "Selected titles"
-msgstr ""
+msgstr "Títulos elegidos"
 
 #. Button: send a correction to the maintainers
 #. Sends the maintainers which system a release file is for
@@ -6585,7 +6636,7 @@ msgstr "Iniciando {name}…"
 
 #: ../../apps/launcher/src/cache-page.tsx
 msgid "Starting…"
-msgstr ""
+msgstr "Iniciando…"
 
 #: ../../apps/launcher/src/custom.ts
 msgid "Starts {path} on this computer."
@@ -6626,13 +6677,15 @@ msgid "still scanning its files."
 msgstr "aún analizando sus archivos."
 
 #. Stops the download cache's current download
+#. Stops the download cache's current download
 #: ../../apps/launcher/src/cache-page.tsx
+#: ../../apps/launcher/src/downloads-page.tsx
 msgid "Stop"
-msgstr ""
+msgstr "Detener"
 
 #: ../../apps/launcher/src/cache-page.tsx
 msgid "Stop keeping {shown}"
-msgstr ""
+msgstr "Dejar de guardar {shown}"
 
 #: ../../apps/launcher/src/sync-folder-page.tsx
 msgid "Stop keeping backups in this folder? The backups in it stay there, and the ones on this computer aren't touched."
@@ -6650,6 +6703,10 @@ msgstr "Dejar de seleccionar"
 msgid "Stop sharing"
 msgstr "Dejar de compartir"
 
+#: ../../apps/launcher/src/downloads-page.tsx
+msgid "Stop the download cache"
+msgstr "Detener la caché de descargas"
+
 #. Button: no longer keep save backups in the sync folder
 #. Button: no longer keep save backups in the sync folder
 #: ../../apps/launcher/src/sync-folder-page.tsx
@@ -6659,7 +6716,7 @@ msgstr ""
 #. Download cache setting: the most storage it uses
 #: ../../apps/launcher/src/cache-page.tsx
 msgid "Storage limit"
-msgstr ""
+msgstr "Límite de almacenamiento"
 
 #: ../../apps/launcher/src/App.tsx
 msgid "Submit a correction for a release file's platform"
@@ -6850,11 +6907,11 @@ msgstr "El desarrollador de la app las ve de todos modos."
 
 #: ../../apps/launcher/src/cache-page.tsx
 msgid "The cache was cleared."
-msgstr ""
+msgstr "Se vació la caché."
 
 #: ../../apps/launcher/src/cache-page.tsx
 msgid "The default folder, in Quiver's data folder"
-msgstr ""
+msgstr "La carpeta predeterminada, en la carpeta de datos de Quiver"
 
 #: ../../apps/launcher/src/detail.tsx
 msgid "The developer proved they make this app"
@@ -6900,6 +6957,10 @@ msgstr "No se encuentra el archivo de tu configuración."
 #: ../../apps/launcher/src/saves-tab.tsx
 msgid "The files in this app's newest backup add up to {size} before it's zipped. Saves are usually under 1 MB, so it may hold files that aren't saves."
 msgstr ""
+
+#: ../../apps/launcher/src/downloads-page.tsx
+msgid "The files the download cache downloads by itself show here."
+msgstr "Aquí aparecen los archivos que la caché de descargas descarga por su cuenta."
 
 #: ../../apps/launcher/src/settings-page.tsx
 msgid "The first start's questions, in turn: the language, adding apps from Quiver Launcher 3, where apps install, usage data and signing in."
@@ -7116,7 +7177,7 @@ msgstr "Esta descarga no coincide con el archivo que Quiver revisó, así que no
 
 #: ../../apps/launcher/src/cache.ts
 msgid "This downloads every app in the catalog, which can take a lot of storage and bandwidth."
-msgstr ""
+msgstr "Esto descarga todas las apps del catálogo, lo que puede ocupar mucho almacenamiento y ancho de banda."
 
 #: ../../apps/launcher/src/launch-options.tsx
 msgid "This file is outside the app's folder, so Quiver never moves or deletes it."
@@ -7197,7 +7258,7 @@ msgstr "Título"
 
 #: ../../apps/launcher/src/cache-page.tsx
 msgid "Titles kept in the download cache"
-msgstr ""
+msgstr "Títulos guardados en la caché de descargas"
 
 #. When something happened, as in "Updated today"
 #: ../ui/src/index.tsx
@@ -7358,7 +7419,7 @@ msgstr "Desinstalar apps"
 #. Download cache storage limit: none
 #: ../../apps/launcher/src/cache-page.tsx
 msgid "Unlimited"
-msgstr ""
+msgstr "Ilimitado"
 
 #. Moderation action
 #: ../../apps/launcher/src/discussions.tsx
@@ -7578,7 +7639,7 @@ msgstr "Usar controles para moverte por Quiver"
 
 #: ../../apps/launcher/src/cache-page.tsx
 msgid "Use default"
-msgstr ""
+msgstr "Usar predeterminada"
 
 #: ../../apps/launcher/src/App.tsx
 msgid "Use my cloud saves"
@@ -7792,7 +7853,7 @@ msgstr "Lo que dicen los jugadores"
 
 #: ../../apps/launcher/src/cache-page.tsx
 msgid "What the download cache keeps"
-msgstr ""
+msgstr "Qué guarda la caché de descargas"
 
 #: ../../apps/launcher/src/feedback.tsx
 msgid "What went wrong, and when? What did you try to fix it?"
@@ -7838,7 +7899,7 @@ msgstr "Cuando una app necesita tu propia copia de un juego, como una ROM o una 
 
 #: ../../apps/launcher/src/cache-page.tsx
 msgid "When it's full, the files used longest ago make room. The files of the versions you have installed always stay."
-msgstr ""
+msgstr "Cuando se llena, los archivos usados hace más tiempo dejan lugar. Los archivos de las versiones que tienes instaladas siempre se quedan."
 
 #: ../../apps/launcher/src/setup.tsx
 msgid "Where apps install"
@@ -8098,7 +8159,7 @@ msgstr "Tu biblioteca se sincroniza entre tus dispositivos y puedes reseñar app
 
 #: ../../apps/launcher/src/cache-page.tsx
 msgid "Your own folder"
-msgstr ""
+msgstr "Tu propia carpeta"
 
 #: ../../apps/launcher/src/settings-page.tsx
 msgid "Your own folders and programs"

@@ -78,6 +78,21 @@ describe("a run of the cache's fetches", () => {
     expect(done.noRoom).toBe(2);
   });
 
+  test("lists each file with its app, version and name, and why one failed: one an antivirus took away says so", async () => {
+    const { d } = deps(catalog, releases);
+    const real = d.native.cacheFetch;
+    d.native.cacheFetch = async (r) => (r.filename === "b5.zip" ? Promise.reject("blocked") : real(r));
+    const earlier = { key: "old", entry: app("z"), version: "1", filename: "z.zip", state: "kept" as const, at: 1 };
+    const done = await runCacheFetch(cacheOf({ mode: "latest" }, "/cache"), d, () => {}, () => false, [earlier]);
+    expect(done.files.map((f) => [f.entry.id, f.version, f.filename, f.state, f.why])).toEqual([
+      ["c", "9", "c9.zip", "kept", undefined],
+      ["b", "5", "b5.zip", "failed", "blocked"],
+      ["a", "2", "a2.zip", "kept", undefined],
+      // Kept from the run before.
+      ["z", "1", "z.zip", "kept", undefined],
+    ]);
+  });
+
   test("a file that fails counts, and the run goes on; being stopped ends it", async () => {
     const { d, fetched } = deps(catalog, releases);
     const real = d.native.cacheFetch;

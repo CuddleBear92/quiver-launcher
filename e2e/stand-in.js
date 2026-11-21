@@ -42,7 +42,11 @@ export function standInForRust({ api, state = {}, config: more = {}, maximized =
     open_url: ({ url }) => void window.__opened.push(url),
     cache_status: () => ({ files: window.__cache.files.length, bytes: window.__cache.files.reduce((n, f) => n + f.size, 0), entries: window.__cache.files }),
     cache_has: ({ checksums }) => checksums.map((c) => window.__cache.files.some((f) => c.endsWith(f.hash))),
-    cache_fetch: ({ request }) => void window.__cache.fetched.push(request),
+    // A test can make a fetch fail or wait (`window.__cache.onFetch`), as a blocked file or a slow download would.
+    cache_fetch: async ({ request }) => {
+      window.__cache.fetched.push(request);
+      await window.__cache.onFetch?.(request, window.__cache.fetched.length);
+    },
     cache_remove: () => void (window.__cache.files = []),
     config: () => config,
     // The computer's PC specs (specs.rs), unless a test's config says otherwise (`pcSpecs`).

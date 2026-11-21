@@ -26,13 +26,38 @@ export type FetchState = {
   noRoom: number;
   /** When the last run finished. */
   finishedAt?: number;
+  /** The files fetched, being fetched or that failed, newest first, across runs (the last FILES_SHOWN): Downloads lists them. */
+  files: CacheFile[];
 };
+
+/**
+ * A file the cache fetched, or tried to: its app (for its picture and name), version and file as published, so a file
+ * an antivirus stopped can be told, and its release reported or taken out of the catalog.
+ */
+export type CacheFile = {
+  /** Its checksum, which tells it from any other. */
+  key: string;
+  entry: Entry;
+  version: string;
+  filename: string;
+  state: "downloading" | "kept" | "failed";
+  /** Why it failed: taken away as it came, as an antivirus does ("blocked"), not the file its checksum names, gone from its host, or anything else. */
+  why?: "blocked" | "mismatch" | "missing" | "failed";
+  received?: number;
+  total?: number | null;
+  at: number;
+};
+
+/** How many of the cache's files Downloads lists. */
+export const FILES_SHOWN = 100;
+
+const whyOf = (e: unknown): CacheFile["why"] => (e === "blocked" || e === "mismatch" || e === "missing" ? e : "failed");
 
 export type FetchDeps = {
   client: Pick<Client, "apps" | "releases" | "app">;
   native: { cacheHas: (dir: string, checksums: string[]) => Promise<boolean[]>; cacheStatus: (dir: string) => Promise<CacheStatus>; cacheFetch: (request: InstallRequest) => Promise<void> };
   /** Selected titles: an app's entry, as the launcher knows it or the catalog has it; none when it's gone. */
-  entryOf: (app: { id: string; slug: string }) => Promise<Pick<Entry, "id" | "slug" | "projectName" | "launcher"> | undefined>;
+  entryOf: (app: { id: string; slug: string }) => Promise<Entry | undefined>;
   here: { os: Os; arch: string };
   /** The checksums of the versions installed now, never rotated out. */
   protect: () => string[];
@@ -41,7 +66,7 @@ export type FetchDeps = {
 };
 
 /** The apps a run goes through: the selected ones, or every app in the catalog, a page at a time. */
-async function* appsOf(cache: Cache, deps: FetchDeps, count: (n: number) => void) {
+async function* appsOf(cache: Cache, deps: FetchDeps, count: (n: number) => void): AsyncGenerator<Entry> {
   if (cache.mode === "selected") {
     count(cache.apps.length);
     for (const app of cache.apps) {
@@ -89,9 +114,11 @@ export function fetchRequest(target: CacheTarget, cache: Cache, protect: string[
  * One run: every file the cache should keep and doesn't, fetched while it fits. `stopped` ends it between files (the
  * file under way is stopped with cacheFetchCancel). Resolves to how it went.
  */
-export async function runCacheFetch(cache: Cache, deps: FetchDeps, report: (s: FetchState) => void, stopped: () => boolean): Promise<FetchState> {
-  const state: FetchState = { running: true, apps: 0, fetched: 0, failed: 0, noRoom: 0 };
+export async function runCacheFetch(cache: Cache, deps: FetchDeps, report: (s: FetchState) => void, stopped: () => boolean, before: CacheFile[] = []): Promise<FetchState> {
+  const state: FetchState = { running: true, apps: 0, fetched: 0, failed: 0, noRoom: 0, files: before.filter((f) => f.state !== "downloading") };
   const show = (more: Partial<FetchState> = {}) => report({ ...state, ...more });
+  /** The file at the top of the list as it is now, the oldest dropping off. */
+  const note = (file: CacheFile) => (state.files = [file, ...state.files.filter((f) => f.key !== file.key)].slice(0, FILES_SHOWN));
   show();
   let used = (await deps.native.cacheStatus(cache.dir)).bytes;
   for await (const entry of appsOf(cache, deps, (n) => (state.ofApps = n))) {
@@ -111,14 +138,21 @@ export async function runCacheFetch(cache: Cache, deps: FetchDeps, report: (s: F
         continue;
       }
       state.current = { name: entry.projectName, version: target.version, filename: target.asset.filename, received: 0, total: target.asset.size ?? null };
+      const file: CacheFile = { key: target.asset.checksum, entry, version: target.version, filename: target.asset.filename, state: "downloading", received: 0, total: target.asset.size ?? null, at: Date.now() };
+      note(file);
       show();
       try {
         await deps.native.cacheFetch(fetchRequest(target, cache, deps.protect()));
         state.fetched++;
         used += target.asset.size ?? 0;
+        note({ ...file, state: "kept", received: file.total ?? undefined, at: Date.now() });
       } catch (e) {
-        if (e === "cancelled") break;
+        if (e === "cancelled") {
+          state.files = state.files.filter((f) => f.key !== file.key);
+          break;
+        }
         state.failed++;
+        note({ ...file, state: "failed", why: whyOf(e), at: Date.now() });
       }
     }
   }
@@ -130,7 +164,7 @@ export async function runCacheFetch(cache: Cache, deps: FetchDeps, report: (s: F
 }
 
 // The run's state, for every page that shows it.
-let current: FetchState = { running: false, apps: 0, fetched: 0, failed: 0, noRoom: 0 };
+let current: FetchState = { running: false, apps: 0, fetched: 0, failed: 0, noRoom: 0, files: [] };
 let asked = 0;
 const listeners = new Set<() => void>();
 const changed = () => listeners.forEach((l) => l());
@@ -138,6 +172,8 @@ const subscribe = (l: () => void) => (listeners.add(l), () => void listeners.del
 export const setFetchState = (s: FetchState) => ((current = s), changed());
 /** The run's progress, as Settings › Cache shows it. */
 export const useFetchState = () => useSyncExternalStore(subscribe, () => current);
+/** Empties the list of what the cache downloaded (Downloads' Clear list); a file under way stays. */
+export const clearCacheFiles = () => setFetchState({ ...current, files: current.files.filter((f) => f.state === "downloading") });
 /** Starts a run now (Settings › Cache's Check now). */
 export const fetchNow = () => ((asked++), changed());
 const useAsked = () => useSyncExternalStore(subscribe, () => asked);
@@ -158,7 +194,7 @@ export function useCacheFetcher(cache: Cache, deps: Omit<FetchDeps, "protect"> &
     let stop = false;
     let timer: ReturnType<typeof setTimeout>;
     const run = async () => {
-      await runCacheFetch(cache, deps, (s) => !stop && setFetchState(s), () => stop).catch(() => setFetchState({ ...current, running: false, finishedAt: Date.now() }));
+      await runCacheFetch(cache, deps, (s) => !stop && setFetchState(s), () => stop, current.files).catch(() => setFetchState({ ...current, running: false, finishedAt: Date.now() }));
       if (!stop) timer = setTimeout(run, EVERY);
     };
     // Asked for, or changed by the player: soon. Else after the launcher's start.
@@ -167,7 +203,7 @@ export function useCacheFetcher(cache: Cache, deps: Omit<FetchDeps, "protect"> &
       stop = true;
       clearTimeout(timer);
       cancel();
-      if (current.running) setFetchState({ ...current, running: false, current: undefined });
+      if (current.running) setFetchState({ ...current, running: false, current: undefined, files: current.files.filter((f) => f.state !== "downloading") });
     };
   }, [key]); // eslint-disable-line react-hooks/exhaustive-deps
 }
@@ -182,7 +218,13 @@ export function useDownloadCache() {
   useEffect(
     () =>
       void native.onCacheProgress((p) => {
-        if (current.running && current.current?.filename) setFetchState({ ...current, current: { ...current.current, received: p.received, total: p.total ?? current.current.total } });
+        if (!current.running || !current.current?.filename) return;
+        const total = p.total ?? current.current.total;
+        setFetchState({
+          ...current,
+          current: { ...current.current, received: p.received, total },
+          files: current.files.map((f) => (f.state === "downloading" ? { ...f, received: p.received, total } : f)),
+        });
       }).catch(() => {}),
     [],
   );
