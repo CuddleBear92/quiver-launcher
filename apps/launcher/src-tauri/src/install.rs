@@ -537,7 +537,7 @@ fn has_known_extension(name: &str) -> bool {
 
 /// The name a file with no known extension should have, from its first bytes;
 /// None when its name already says, or its contents don't (a bare program).
-fn named_for_contents(name: &str, file: &Path) -> Option<String> {
+pub(crate) fn named_for_contents(name: &str, file: &Path) -> Option<String> {
     if has_known_extension(name) {
         return None;
     }

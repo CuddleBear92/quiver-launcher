@@ -149,6 +149,9 @@ pub fn has(dir: &Path, checksums: &[String]) -> Vec<bool> {
 pub fn keep(cache: &CacheUse, file: &Path, filename: &str, hash: &str) -> io::Result<()> {
     let hex = hex_of(hash).ok_or_else(|| io::Error::other("not a SHA-256"))?;
     let filename = crate::install::plain_name(filename).map_err(io::Error::other)?.to_string();
+    // A host can name a file without its extension ("Game-v1.2-Windows"): kept named for what's in it, as an install
+    // names it, so it opens as what it is.
+    let filename = crate::install::named_for_contents(&filename, file).unwrap_or(filename);
     let dir = Path::new(&cache.dir);
     fs::create_dir_all(dir)?;
     let _guard = LOCK.lock().unwrap_or_else(|e| e.into_inner());
@@ -157,6 +160,7 @@ pub fn keep(cache: &CacheUse, file: &Path, filename: &str, hash: &str) -> io::Re
     let at = now();
     match entries.iter_mut().find(|e| e.hash == hex) {
         Some(entry) if path_of(dir, entry).is_file() => {
+            named_for_contents(dir, entry);
             if !entry.apps.contains(&owner) {
                 entry.apps.push(owner);
             }
@@ -226,13 +230,27 @@ pub fn trim(dir: &Path, limit: Option<u64>, protect: &[String]) -> io::Result<()
     Ok(())
 }
 
-/// What's in the cache, with files gone from it by hand left out of the index.
+/// A kept file with no extension named for what's in it ("Game-Windows" a zip becomes "Game-Windows.zip"), as one
+/// kept before the cache did so was not. Whether it changed.
+fn named_for_contents(dir: &Path, entry: &mut Cached) -> bool {
+    let from = path_of(dir, entry);
+    let Some(named) = crate::install::named_for_contents(&entry.filename, &from) else { return false };
+    if fs::rename(&from, dir.join(&entry.hash).join(&named)).is_err() {
+        return false;
+    }
+    entry.filename = named;
+    true
+}
+
+/// What's in the cache, with files gone from it by hand left out of the index, and any without an extension named
+/// for what's in them.
 pub fn status(dir: &Path) -> Status {
     let _guard = LOCK.lock().unwrap_or_else(|e| e.into_inner());
     let mut entries = read_index(dir);
     let before = entries.len();
     entries.retain(|e| path_of(dir, e).is_file());
-    if entries.len() != before {
+    let renamed = entries.iter_mut().fold(false, |any, e| named_for_contents(dir, e) || any);
+    if entries.len() != before || renamed {
         let _ = write_index(dir, &entries);
     }
     Status { files: entries.len(), bytes: entries.iter().map(|e| e.size).sum(), entries }
@@ -365,6 +383,37 @@ mod tests {
         remove(&cache, None).unwrap();
         assert_eq!(status(&cache).files, 0);
         assert!(cache.join("players-own.txt").exists());
+    }
+
+    #[test]
+    fn a_file_without_an_extension_is_kept_named_for_what_it_is() {
+        let (tmp, cache) = setup();
+        let zip = b"PK\x03\x04 the rest of a zip";
+        let hash = put(tmp.path(), &uses(&cache, "mk64", "0.9.2"), "MarioKart64Recompiled-v0.9.2-Windows-RelWithDebInfo", zip);
+        assert_eq!(fs::read(cache.join(&hash).join("MarioKart64Recompiled-v0.9.2-Windows-RelWithDebInfo.zip")).unwrap(), zip);
+        assert_eq!(status(&cache).entries[0].filename, "MarioKart64Recompiled-v0.9.2-Windows-RelWithDebInfo.zip");
+        // A name that says already, or contents that don't (a bare program), stay as they are.
+        put(tmp.path(), &uses(&cache, "a", "1"), "Game.AppImage", b"\x7FELF an AppImage");
+        put(tmp.path(), &uses(&cache, "b", "1"), "tool", b"#!/bin/sh");
+        let names: HashSet<String> = status(&cache).entries.into_iter().map(|e| e.filename).collect();
+        assert!(names.contains("Game.AppImage") && names.contains("tool"));
+    }
+
+    #[test]
+    fn one_kept_before_without_its_extension_is_named_for_it_when_the_cache_is_read() {
+        let (tmp, cache) = setup();
+        let zip = b"PK\x03\x04 an old download";
+        let hash = put(tmp.path(), &uses(&cache, "a", "1"), "Game-Windows.zip", zip);
+        // As an older build left it: the name its host gave it, no extension.
+        fs::rename(cache.join(&hash).join("Game-Windows.zip"), cache.join(&hash).join("Game-Windows")).unwrap();
+        let mut entries = read_index(&cache);
+        entries[0].filename = "Game-Windows".into();
+        write_index(&cache, &entries).unwrap();
+        assert_eq!(status(&cache).entries[0].filename, "Game-Windows.zip");
+        assert!(cache.join(&hash).join("Game-Windows.zip").is_file());
+        assert_eq!(read_index(&cache)[0].filename, "Game-Windows.zip");
+        // And it still installs from there.
+        assert!(take(&uses(&cache, "a", "1"), &hash, &tmp.path().join("again")).is_some());
     }
 
     #[test]
