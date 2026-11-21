@@ -1,0 +1,143 @@
+/**
+ * The download cache (cache.rs): release files kept to install again without downloading them, and as a backup of what
+ * was published. Off unless the player turns it on in Settings › Cache, where they pick what it keeps:
+ *
+ * - Installed only: the file of each app's installed version, as it's installed; an app's newer one takes its place.
+ * - Selected titles: the apps the player marks on their pages (Manage), their newest release, kept up to date.
+ * - Every latest: the newest release of every app in the catalog.
+ * - Hoarder: every release of every app in the catalog, to archive them.
+ *
+ * Whatever it keeps fits in the player's limit, rotating out what was least recently used, but never the file of a
+ * version installed now. Only files with a checksum are kept, and a kept file is checked against it whenever it's used.
+ */
+import { msg } from "@lingui/core/macro";
+import type { MessageDescriptor } from "@lingui/core";
+import type { Asset, Entry, Os, Release } from "@quiverlauncher/api";
+import { bestAssets, releaseFiles } from "./assets";
+
+export type CacheMode = "none" | "installed" | "selected" | "latest" | "hoarder";
+
+/** As settings.json keeps it. */
+export type CacheSettings = {
+  mode?: CacheMode;
+  /** The cache folder; unset, `cache` in the data folder (`Config.cacheDir`). */
+  dir?: string;
+  /** The most it keeps, in GB; unset, DEFAULT_LIMIT_GB; null, no limit. */
+  limitGb?: number | null;
+  /** Every latest, Hoarder and Selected titles keep each release's files for every system, not only this computer's. */
+  allPlatforms?: boolean;
+  /** Selected titles: the apps, by id, and their catalog slug to look them up by when they aren't in the library. */
+  apps?: { id: string; slug: string }[];
+};
+
+export const DEFAULT_LIMIT_GB = 50;
+/** The limits offered, in GB; null is Unlimited. */
+export const LIMITS_GB: (number | null)[] = [5, 10, 25, 50, 100, 250, 500, 1000, null];
+const GB = 1024 ** 3;
+
+// Names put in the language when shown (i18n._), not here, where the module loads before any is picked.
+export const CACHE_MODES: { mode: CacheMode; name: MessageDescriptor; about: MessageDescriptor; warning?: MessageDescriptor }[] = [
+  {
+    mode: "none",
+    name: msg({ message: "Off", comment: "Download cache mode: nothing is kept" }),
+    about: msg`Nothing is kept. Each install downloads its files.`,
+  },
+  {
+    mode: "installed",
+    name: msg({ message: "Installed only", comment: "Download cache mode" }),
+    about: msg`Keeps the file of each app as you install it. An app's newer version takes the place of the one before.`,
+  },
+  {
+    mode: "selected",
+    name: msg({ message: "Selected titles", comment: "Download cache mode" }),
+    about: msg`Keeps the newest release of the apps you choose, from Manage on each app's page.`,
+  },
+  {
+    mode: "latest",
+    name: msg({ message: "Every latest", comment: "Download cache mode: the newest release of every app in the catalog" }),
+    about: msg`Keeps the newest release of every app in the catalog, downloading them in the background.`,
+    warning: msg`This downloads every app in the catalog, which can take a lot of storage and bandwidth.`,
+  },
+  {
+    mode: "hoarder",
+    name: msg({ message: "Hoarder", comment: "Download cache mode: every release of every app, to archive them" }),
+    about: msg`Keeps every release of every app in the catalog, to archive them.`,
+    warning: msg`For archiving only. Every version of every app can need terabytes of storage and a very long time to download.`,
+  },
+];
+
+/** The settings as they apply, defaults filled in: `limit` in bytes, none for no limit. */
+export function cacheOf(saved: CacheSettings | undefined, defaultDir: string) {
+  const mode = CACHE_MODES.some((m) => m.mode === saved?.mode) ? saved!.mode! : "none";
+  const gb = saved?.limitGb === undefined ? DEFAULT_LIMIT_GB : saved.limitGb;
+  return {
+    mode,
+    on: mode !== "none",
+    dir: saved?.dir?.trim() || defaultDir,
+    limit: gb === null || !(gb > 0) ? undefined : Math.round(gb * GB),
+    limitGb: gb,
+    allPlatforms: Boolean(saved?.allPlatforms),
+    apps: saved?.apps ?? [],
+  };
+}
+export type Cache = ReturnType<typeof cacheOf>;
+
+/** What an install asks of the cache (cache.rs's CacheUse): none while it's off. */
+export type CacheUse = { dir: string; keep: boolean; app: string; version: string; os?: Os; onlyThis?: boolean; limit?: number; protect: string[] };
+
+/**
+ * For an app's install: always taken from the cache when its file is there; kept there as the mode says (any install
+ * but in Selected titles, where only those apps'). Installed only keeps an app's latest installed file alone.
+ */
+export function cacheUse(cache: Cache, app: { id: string; version: string; os?: Os }, protect: string[]): CacheUse | undefined {
+  if (!cache.on) return undefined;
+  const keep = cache.mode !== "selected" || isSelected(cache, app.id);
+  return {
+    dir: cache.dir,
+    keep,
+    app: app.id,
+    version: app.version,
+    ...(app.os && { os: app.os }),
+    ...(cache.mode === "installed" && { onlyThis: true }),
+    ...(cache.limit !== undefined && { limit: cache.limit }),
+    protect,
+  };
+}
+
+/** Whether Selected titles keeps this app. */
+export const isSelected = (cache: Pick<Cache, "apps">, id: string) => cache.apps.some((a) => a.id === id);
+
+/** Selected titles with this app on or off. */
+export function withSelected(saved: CacheSettings | undefined, app: { id: string; slug: string }, on: boolean): CacheSettings {
+  const others = (saved?.apps ?? []).filter((a) => a.id !== app.id);
+  return { ...saved, apps: on ? [...others, { id: app.id, slug: app.slug }] : others };
+}
+
+/** The files never rotated out: the versions installed now, by their checksums. */
+export const protectedFiles = (installs: Record<string, { checksum?: string }>) =>
+  [...new Set(Object.values(installs).flatMap((i) => (i.checksum ? [i.checksum] : [])))];
+
+/** The modes that download files by themselves, rather than only keeping what's installed. */
+export const fetches = (cache: Cache) => cache.mode === "latest" || cache.mode === "hoarder" || cache.mode === "selected";
+
+/** A release file for the cache to fetch. */
+export type CacheTarget = { app: string; slug: string; name: string; version: string; asset: Asset & { checksum: string } };
+
+/**
+ * The files the cache keeps of an app, from its releases newest first: the newest's, or every one's in Hoarder. Of a
+ * release, this computer's file, as an install would pick it, or with `allPlatforms` its builds for every system. Only
+ * files with a checksum, which the cache is checked against.
+ */
+export function cacheTargets(entry: Pick<Entry, "id" | "slug" | "projectName" | "launcher">, releases: Release[], cache: Cache, here: { os: Os; arch: string }): CacheTarget[] {
+  const of = cache.mode === "hoarder" ? releases : releases.slice(0, 1);
+  return of.flatMap((release) => {
+    const filter = (release.installationOverride ?? entry.launcher)?.releaseAssetFilter;
+    const files = cache.allPlatforms ? releaseFiles(release.assets) : bestAssets(release.assets, here.os, here.arch, filter).slice(0, 1);
+    return files.flatMap((asset) =>
+      asset.checksum ? [{ app: entry.id, slug: entry.slug, name: entry.projectName, version: release.version, asset: asset as Asset & { checksum: string } }] : [],
+    );
+  });
+}
+
+/** Whether a file fits in the room left, so a fetch never pushes out what's kept to make room for more. */
+export const fits = (asset: Pick<Asset, "size">, used: number, limit?: number) => limit === undefined || used + (asset.size ?? 0) <= limit;

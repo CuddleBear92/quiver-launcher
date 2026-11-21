@@ -21,6 +21,7 @@ export function standInForRust({ api, state = {}, config: more = {}, maximized =
     os: "linux",
     arch: "x64",
     appsDir: "/home/player/Games/Quiver",
+    cacheDir: "/home/player/.local/share/quiver/cache",
     version: "4.0.0",
     home: "/home/player",
     user: null,
@@ -35,8 +36,14 @@ export function standInForRust({ api, state = {}, config: more = {}, maximized =
   window.__calls = [];
   // Downloads under way, by app: `resolve({})` finishes one, as installed.
   window.__installs = new Map();
+  // The download cache (cache.rs): what tests put in it, by hash, and what was fetched into it.
+  window.__cache = { files: [], fetched: [] };
   const answers = {
     open_url: ({ url }) => void window.__opened.push(url),
+    cache_status: () => ({ files: window.__cache.files.length, bytes: window.__cache.files.reduce((n, f) => n + f.size, 0), entries: window.__cache.files }),
+    cache_has: ({ checksums }) => checksums.map((c) => window.__cache.files.some((f) => c.endsWith(f.hash))),
+    cache_fetch: ({ request }) => void window.__cache.fetched.push(request),
+    cache_remove: () => void (window.__cache.files = []),
     config: () => config,
     // The computer's PC specs (specs.rs), unless a test's config says otherwise (`pcSpecs`).
     pc_specs: () => more.pcSpecs ?? { cpu: "AMD Ryzen 5 5600", gpu: "AMD Radeon RX 6600", ramGb: 16 },

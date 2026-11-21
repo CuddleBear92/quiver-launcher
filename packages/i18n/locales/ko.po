@@ -34,6 +34,11 @@ msgstr "{0, plural, other {앱 #개를 라이브러리에서 숨겼습니다.}}"
 msgid "{0, plural, one {# app is still in {1}. New ones go in the new folder.} other {# apps are still in {2}. New ones go in the new folder.}}"
 msgstr "{0, plural, other {앱 #개가 아직 {2}에 있어요. 새 앱은 새 폴더에 설치돼요.}}"
 
+#. placeholder {0}: s.apps
+#: ../../apps/launcher/src/cache-page.tsx
+msgid "{0, plural, one {# app looked at} other {# apps looked at}}"
+msgstr ""
+
 #. placeholder {0}: ids.length
 #: ../../apps/launcher/src/library-ticking.tsx
 msgid "{0, plural, one {# app shows in your library again.} other {# apps show in your library again.}}"
@@ -64,8 +69,25 @@ msgstr "{0, plural, other {#개 변경됨}}"
 msgid "{0, plural, one {# comment} other {# comments}}"
 msgstr "{0, plural, other {댓글 #개}}"
 
+#. placeholder {0}: s.failed
+#: ../../apps/launcher/src/cache-page.tsx
+msgid "{0, plural, one {# file couldn't be downloaded} other {# files couldn't be downloaded}}"
+msgstr ""
+
+#. placeholder {0}: s.noRoom
+#: ../../apps/launcher/src/cache-page.tsx
+msgid "{0, plural, one {# file didn't fit in the storage limit} other {# files didn't fit in the storage limit}}"
+msgstr ""
+
+#. placeholder {0}: s.fetched
+#: ../../apps/launcher/src/cache-page.tsx
+msgid "{0, plural, one {# file kept} other {# files kept}}"
+msgstr ""
+
 #. placeholder {0}: backup.files
 #. placeholder {0}: copy.files
+#. placeholder {0}: status.files
+#: ../../apps/launcher/src/cache-page.tsx
 #: ../../apps/launcher/src/cloud-saves-page.tsx
 #: ../../apps/launcher/src/saves-tab.tsx
 msgid "{0, plural, one {# file} other {# files}}"
@@ -75,6 +97,11 @@ msgstr "{0, plural, other {파일 #개}}"
 #: ../../apps/launcher/src/settings-page.tsx
 msgid "{0, plural, one {# installed app isn't in its system folder yet.} other {# installed apps aren't in their system folders yet.}}"
 msgstr "{0, plural, other {설치된 앱 #개가 아직 시스템 폴더에 없습니다.}}"
+
+#. placeholder {0}: s.fetched
+#: ../../apps/launcher/src/cache-page.tsx
+msgid "{0, plural, one {# new file kept} other {# new files kept}}"
+msgstr ""
 
 #. placeholder {0}: portable.length
 #: ../../apps/launcher/src/library-ticking.tsx
@@ -397,6 +424,11 @@ msgstr "{files, plural, other {설치된 #개의 파일은 휴지통으로 이�
 #: ../../apps/launcher/src/old-library.tsx
 msgid "{filters, plural, one {# tag filter, as a playlist} other {# tag filters, as playlists}}"
 msgstr "{filters, plural, other {태그 필터 #개, 재생 목록으로}}"
+
+#. A storage size in gigabytes
+#: ../../apps/launcher/src/cache-page.tsx
+msgid "{gb} GB"
+msgstr ""
 
 #. A mod's version on this computer: v1.2 installed
 #: ../../apps/launcher/src/mods.tsx
@@ -767,6 +799,11 @@ msgstr "{systems} 전용"
 msgid "{tagged, plural, one {The tags you gave # app} other {The tags you gave # apps}}"
 msgstr "{tagged, plural, other {앱 #개에 붙인 태그}}"
 
+#. A storage size in terabytes
+#: ../../apps/launcher/src/cache-page.tsx
+msgid "{tb} TB"
+msgstr ""
+
 #: ../../apps/launcher/src/sync-folder-page.tsx
 msgid "{there, plural, one {This folder already has saves of # app. Quiver offers them when you start it here.} other {This folder already has saves of # apps. Quiver offers them when you start those apps here.}}"
 msgstr ""
@@ -810,6 +847,14 @@ msgstr "{limit} 중 {used} 사용 중."
 #: ../../apps/launcher/src/cloud-saves-page.tsx
 msgid "{used} of {limit} used. Each app keeps its newest {keep} copies."
 msgstr "{limit} 중 {used} 사용 중. 앱마다 최신 사본 {keep}개가 보관됩니다."
+
+#: ../../apps/launcher/src/cache-page.tsx
+msgid "{usedLabel} of {limitLabel} used"
+msgstr ""
+
+#: ../../apps/launcher/src/cache-page.tsx
+msgid "{usedLabel} used"
+msgstr ""
 
 #: ../../apps/launcher/src/App.tsx
 msgid "{verifiedVersion} · downloads can't be checked"
@@ -1340,6 +1385,10 @@ msgstr "링크가 있는 누구나 quiverlauncher.com에서 보고 자신의 라
 msgid "App"
 msgstr "앱"
 
+#: ../../apps/launcher/src/cache-page.tsx
+msgid "App {looked} of {of}"
+msgstr ""
+
 #: ../../apps/launcher/src/detail.tsx
 msgid "App details"
 msgstr "앱 세부 정보"
@@ -1684,6 +1733,11 @@ msgstr "제작: {author}"
 msgid "By name"
 msgstr "이름순"
 
+#. Settings section: the download cache
+#: ../../apps/launcher/src/settings-page.tsx
+msgid "Cache"
+msgstr ""
+
 #: ../../apps/launcher/src/game.tsx
 msgid "Called {title} in {region}"
 msgstr "{region} 이름: {title}"
@@ -1702,6 +1756,7 @@ msgstr "추가할 수 없음: Quiver Launcher 3이 어디서 받은 앱인지 �
 
 #: ../../apps/launcher/src/app-files.tsx
 #: ../../apps/launcher/src/App.tsx
+#: ../../apps/launcher/src/cache-page.tsx
 #: ../../apps/launcher/src/cloud-saves-page.tsx
 #: ../../apps/launcher/src/correction.tsx
 #: ../../apps/launcher/src/detail.tsx
@@ -1794,6 +1849,7 @@ msgstr "버전 변경"
 msgid "Change version…"
 msgstr "버전 변경…"
 
+#: ../../apps/launcher/src/cache-page.tsx
 #: ../../apps/launcher/src/settings-page.tsx
 msgid "Change…"
 msgstr "변경…"
@@ -1811,9 +1867,17 @@ msgstr "이 버전의 48시간 대기가 끝난 뒤 GitHub에서 변경됨. 이 
 msgid "Check for updates"
 msgstr "업데이트 확인"
 
+#: ../../apps/launcher/src/cache-page.tsx
+msgid "Check now"
+msgstr ""
+
 #: ../../apps/launcher/src/own-copy-setup.tsx
 msgid "Check yours"
 msgstr "사본 확인"
+
+#: ../../apps/launcher/src/cache-page.tsx
+msgid "Checked {finished}"
+msgstr ""
 
 #: ../../apps/launcher/src/settings-page.tsx
 msgid "Checking the folder"
@@ -1868,6 +1932,10 @@ msgstr "파일 선택…"
 #: ../../apps/launcher/src/console-folders.tsx
 msgid "Choose a folder for {name}"
 msgstr "{name} 폴더 선택"
+
+#: ../../apps/launcher/src/cache-page.tsx
+msgid "Choose a folder for the download cache"
+msgstr ""
 
 #: ../../apps/launcher/src/store.tsx
 msgid "Choose a folder outside {name}, which is an app's own folder."
@@ -2087,6 +2155,14 @@ msgstr "{label} 지우기"
 msgid "Clear all"
 msgstr "모두 지우기"
 
+#: ../../apps/launcher/src/cache-page.tsx
+msgid "Clear cache"
+msgstr ""
+
+#: ../../apps/launcher/src/cache-page.tsx
+msgid "Clear cache…"
+msgstr ""
+
 #: ../../apps/launcher/src/App.tsx
 #: ../../apps/launcher/src/library.tsx
 msgid "Clear search"
@@ -2241,6 +2317,10 @@ msgstr ""
 #: ../../apps/launcher/src/settings-page.tsx
 msgid "Copying {folder}… {percent}%"
 msgstr "{folder} 복사 중… {percent}%"
+
+#: ../../apps/launcher/src/cache-page.tsx
+msgid "Couldn't clear the cache. Is its drive connected?"
+msgstr ""
 
 #: ../../apps/launcher/src/discussions.tsx
 msgid "Couldn't delete it. Try again."
@@ -2547,6 +2627,15 @@ msgstr "완료했어요. 앱이 라이브러리에 들어왔어요. 다만 다�
 msgid "Downgrade to {version}"
 msgstr "{version}(으)로 다운그레이드"
 
+#. Heading in Settings: a folder of downloaded release files, kept to install again and as a backup
+#: ../../apps/launcher/src/cache-page.tsx
+msgid "Download cache"
+msgstr ""
+
+#: ../../apps/launcher/src/cache-page.tsx
+msgid "Download cache used"
+msgstr ""
+
 #: ../../apps/launcher/src/App.tsx
 #: ../../apps/launcher/src/downloads-page.tsx
 #: ../../apps/launcher/src/library-sidebar.tsx
@@ -2570,6 +2659,11 @@ msgstr "{count, plural, other {앱 #개}} 다운로드 중, {percent}%."
 msgid "Downloading {count, plural, one {# app} other {# apps}}."
 msgstr "{count, plural, other {앱 #개}} 다운로드 중."
 
+#. Download cache: the app and version it's downloading by itself now
+#: ../../apps/launcher/src/cache-page.tsx
+msgid "Downloading {name} {version}"
+msgstr ""
+
 #: ../../apps/launcher/src/App.tsx
 #: ../../apps/launcher/src/card-menu.tsx
 #: ../../apps/launcher/src/library-sidebar.tsx
@@ -2590,6 +2684,10 @@ msgstr "다운로드"
 #: ../../apps/launcher/src/own.tsx
 msgid "Downloads {only}"
 msgstr "{only} 다운로드"
+
+#: ../../apps/launcher/src/cache-page.tsx
+msgid "Downloads start shortly after Quiver opens, then every 6 hours."
+msgstr ""
 
 #: ../../apps/launcher/src/downloads-page.tsx
 msgid "Downloads that finish while Quiver Launcher is open show here."
@@ -2711,6 +2809,11 @@ msgstr ""
 msgid "Every console"
 msgstr "모든 콘솔"
 
+#. Download cache mode: the newest release of every app in the catalog
+#: ../../apps/launcher/src/cache.ts
+msgid "Every latest"
+msgstr ""
+
 #: ../../apps/launcher/src/tag-settings.tsx
 msgid "Every tag is hidden."
 msgstr "모든 태그가 숨겨져 있습니다."
@@ -2820,6 +2923,10 @@ msgstr "여러 콘솔의 게임이 든 폴더용이에요."
 #: ../../apps/launcher/src/own.tsx
 msgid "For an app the catalog doesn't have. It's yours alone; to add one for everyone, suggest it on quiverlauncher.com."
 msgstr "카탈로그에 없는 앱을 위한 기능이에요. 나만 볼 수 있어요. 모두를 위해 추가하려면 quiverlauncher.com에서 제안하세요."
+
+#: ../../apps/launcher/src/cache.ts
+msgid "For archiving only. Every version of every app can need terabytes of storage and a very long time to download."
+msgstr ""
 
 #: ../../apps/launcher/src/correction.tsx
 msgid "For example: it starts the level editor instead of the game, or it needs the US version of the game."
@@ -3143,6 +3250,11 @@ msgstr "이 태그 숨기기"
 msgid "Hide your feedback for {name}"
 msgstr "{name} 피드백 숨기기"
 
+#. Download cache mode: every release of every app, to archive them
+#: ../../apps/launcher/src/cache.ts
+msgid "Hoarder"
+msgstr ""
+
 #: ../../apps/launcher/src/repository-tokens.tsx
 msgid "Host"
 msgstr ""
@@ -3432,6 +3544,8 @@ msgstr "{dir}에 설치됨"
 msgid "Installed mods"
 msgstr "설치된 모드"
 
+#. Download cache mode
+#: ../../apps/launcher/src/cache.ts
 #: ../../apps/launcher/src/library.tsx
 msgid "Installed only"
 msgstr "설치된 앱만"
@@ -3593,6 +3707,16 @@ msgstr "방금 업데이트됨"
 msgid "Keep {keep}"
 msgstr "{keep} 유지"
 
+#. Download cache setting: keep a release's builds for Windows, Linux, macOS and Android, not only this computer's
+#: ../../apps/launcher/src/cache-page.tsx
+msgid "Keep every system's files"
+msgstr ""
+
+#. Toggle on an app's Manage tab: the download cache keeps this app's newest release
+#: ../../apps/launcher/src/cache-page.tsx
+msgid "Keep in download cache"
+msgstr ""
+
 #: ../../apps/launcher/src/settings-page.tsx
 msgid "Keep Quiver open until it's done."
 msgstr "끝날 때까지 Quiver를 열어 두세요."
@@ -3600,6 +3724,10 @@ msgstr "끝날 때까지 Quiver를 열어 두세요."
 #: ../../apps/launcher/src/settings-page.tsx
 msgid "Keep Quiver open until it's done. Each app's old copy is deleted only once its new one is checked."
 msgstr "끝날 때까지 Quiver를 열어 두세요. 각 앱의 이전 사본은 새 사본을 확인한 뒤에만 지워져요."
+
+#: ../../apps/launcher/src/cache-page.tsx
+msgid "Keep the files Quiver downloads, to install them again without downloading, even offline, and as a backup of what was released. Each file is checked against the catalog before it's installed."
+msgstr ""
 
 #: ../../apps/launcher/src/github-token.tsx
 #: ../../apps/launcher/src/gitlab-token.tsx
@@ -3621,6 +3749,22 @@ msgstr "이 앱의 세이브를 내 Quiver 계정에 보관"
 
 #: ../../apps/launcher/src/sync-folder-page.tsx
 msgid "Keep your save backups in a folder of your own too, such as one inside Dropbox, OneDrive, Google Drive or Syncthing. Choose the same folder on your other computers, and Quiver offers your newest saves when you start an app there. It needs no Quiver account, and works for apps you added yourself."
+msgstr ""
+
+#: ../../apps/launcher/src/cache.ts
+msgid "Keeps every release of every app in the catalog, to archive them."
+msgstr ""
+
+#: ../../apps/launcher/src/cache.ts
+msgid "Keeps the file of each app as you install it. An app's newer version takes the place of the one before."
+msgstr ""
+
+#: ../../apps/launcher/src/cache.ts
+msgid "Keeps the newest release of every app in the catalog, downloading them in the background."
+msgstr ""
+
+#: ../../apps/launcher/src/cache.ts
+msgid "Keeps the newest release of the apps you choose, from Manage on each app's page."
 msgstr ""
 
 #: ../../apps/launcher/src/settings-page.tsx
@@ -3869,6 +4013,11 @@ msgstr "다른 폴더에서 찾기…"
 #: ../../apps/launcher/src/own.tsx
 msgid "Look it up"
 msgstr "찾아보기"
+
+#. Download cache: the app whose releases it's reading
+#: ../../apps/launcher/src/cache-page.tsx
+msgid "Looking at {name}"
+msgstr ""
 
 #: ../../apps/launcher/src/card-menu.tsx
 msgid "Looking for programs…"
@@ -4262,6 +4411,10 @@ msgstr "새 댓글"
 msgid "New discussions"
 msgstr "새 토론"
 
+#: ../../apps/launcher/src/cache-page.tsx
+msgid "New files go in this folder. Files already in the old one stay there."
+msgstr ""
+
 #: ../../apps/launcher/src/setup.tsx
 msgid "New in Quiver Launcher 4"
 msgstr "Quiver Launcher 4의 새로운 기능"
@@ -4437,6 +4590,10 @@ msgstr "숨긴 태그가 없습니다."
 #: ../../apps/launcher/src/tag-settings.tsx
 msgid "No tags match your search."
 msgstr "검색과 일치하는 태그가 없습니다."
+
+#: ../../apps/launcher/src/cache-page.tsx
+msgid "No titles chosen yet. Open an app's page, then Manage, and turn on Keep in download cache."
+msgstr ""
 
 #: ../../apps/launcher/src/feedback.tsx
 msgid "Nobody has said yet. Be the first."
@@ -4642,6 +4799,10 @@ msgstr ""
 msgid "Nothing is downloading."
 msgstr "다운로드 중인 항목이 없어요."
 
+#: ../../apps/launcher/src/cache.ts
+msgid "Nothing is kept. Each install downloads its files."
+msgstr ""
+
 #: ../../apps/launcher/src/old-library.tsx
 msgid "Nothing is moved or copied: your installed apps stay where Quiver Launcher 3 put them, and play from there. Keep your Quiver Launcher 3 folder for now, as deleting it would delete them. Once you've tried Quiver Launcher 4, you can move them into Quiver's apps folder in Settings › Apps folder."
 msgstr "아무것도 옮기거나 복사하지 않아요. 설치된 앱은 Quiver Launcher 3가 둔 곳에 그대로 있고 거기서 실행돼요. Quiver Launcher 3 폴더를 지우면 앱도 함께 지워지니 당분간 그대로 두세요. Quiver Launcher 4를 써 본 뒤 설정 › 앱 폴더에서 Quiver의 앱 폴더로 옮길 수 있어요."
@@ -4649,6 +4810,10 @@ msgstr "아무것도 옮기거나 복사하지 않아요. 설치된 앱은 Quive
 #: ../../apps/launcher/src/old-library.tsx
 msgid "Nothing is moved, copied or deleted, and your Quiver Launcher 3 folder stays as it is."
 msgstr "아무것도 옮기거나 복사하거나 지우지 않으며, Quiver Launcher 3 폴더는 그대로 남아요."
+
+#: ../../apps/launcher/src/cache-page.tsx
+msgid "Nothing kept yet."
+msgstr ""
 
 #: ../../apps/launcher/src/App.tsx
 msgid "Nothing matches that search and those filters."
@@ -4667,7 +4832,9 @@ msgstr "없음, 바로 실행"
 msgid "Notice"
 msgstr "알림"
 
+#. Download cache mode: nothing is kept
 #. TV mode setting
+#: ../../apps/launcher/src/cache.ts
 #: ../../apps/launcher/src/settings-page.tsx
 msgid "Off"
 msgstr "끄기"
@@ -4706,6 +4873,7 @@ msgid "Opacity"
 msgstr "불투명도"
 
 #. Controller hint: what Confirm does on an app card
+#: ../../apps/launcher/src/cache-page.tsx
 #: ../../apps/launcher/src/settings-page.tsx
 #: ../../apps/launcher/src/spatial.ts
 msgid "Open"
@@ -5514,6 +5682,10 @@ msgstr "콘솔 {name} 삭제"
 msgid "Remove every copy of {name} from your account? Saves on your computers aren't touched."
 msgstr "계정에서 {name}의 모든 사본을 삭제할까요? 컴퓨터에 있는 세이브는 그대로 유지됩니다."
 
+#: ../../apps/launcher/src/cache-page.tsx
+msgid "Remove every file in the download cache? Installed apps aren't affected."
+msgstr ""
+
 #: ../../apps/launcher/src/library.tsx
 msgid "Remove filter {on}"
 msgstr "필터 {on} 삭제"
@@ -5937,6 +6109,11 @@ msgstr "모두 선택"
 #: ../../apps/launcher/src/library-ticking.tsx
 msgid "Selected apps"
 msgstr "선택한 앱"
+
+#. Download cache mode
+#: ../../apps/launcher/src/cache.ts
+msgid "Selected titles"
+msgstr ""
 
 #. Button: send a correction to the maintainers
 #. Sends the maintainers which system a release file is for
@@ -6406,6 +6583,10 @@ msgstr "시작하는 중"
 msgid "Starting {name}…"
 msgstr "{name} 시작 중…"
 
+#: ../../apps/launcher/src/cache-page.tsx
+msgid "Starting…"
+msgstr ""
+
 #: ../../apps/launcher/src/custom.ts
 msgid "Starts {path} on this computer."
 msgstr "이 컴퓨터에서 {path}을(를) 실행해요."
@@ -6444,6 +6625,15 @@ msgstr "{total}단계 중 {n}단계"
 msgid "still scanning its files."
 msgstr "아직 파일을 검사하는 중이에요."
 
+#. Stops the download cache's current download
+#: ../../apps/launcher/src/cache-page.tsx
+msgid "Stop"
+msgstr ""
+
+#: ../../apps/launcher/src/cache-page.tsx
+msgid "Stop keeping {shown}"
+msgstr ""
+
 #: ../../apps/launcher/src/sync-folder-page.tsx
 msgid "Stop keeping backups in this folder? The backups in it stay there, and the ones on this computer aren't touched."
 msgstr ""
@@ -6464,6 +6654,11 @@ msgstr "공유 중지"
 #. Button: no longer keep save backups in the sync folder
 #: ../../apps/launcher/src/sync-folder-page.tsx
 msgid "Stop using"
+msgstr ""
+
+#. Download cache setting: the most storage it uses
+#: ../../apps/launcher/src/cache-page.tsx
+msgid "Storage limit"
 msgstr ""
 
 #: ../../apps/launcher/src/App.tsx
@@ -6652,6 +6847,14 @@ msgstr "Quiver가 제공하는 {installedVersion}은(는) 설치한 파일과 �
 #: ../../apps/launcher/src/feedback.tsx
 msgid "The app's developer sees them either way."
 msgstr "앱 개발자는 어느 쪽이든 볼 수 있습니다."
+
+#: ../../apps/launcher/src/cache-page.tsx
+msgid "The cache was cleared."
+msgstr ""
+
+#: ../../apps/launcher/src/cache-page.tsx
+msgid "The default folder, in Quiver's data folder"
+msgstr ""
 
 #: ../../apps/launcher/src/detail.tsx
 msgid "The developer proved they make this app"
@@ -6911,6 +7114,10 @@ msgstr "이 토론을 볼 수 없어요"
 msgid "This download doesn't match the file Quiver checked, so it wasn't installed."
 msgstr "이 다운로드가 Quiver가 확인한 파일과 일치하지 않아 설치하지 않았어요."
 
+#: ../../apps/launcher/src/cache.ts
+msgid "This downloads every app in the catalog, which can take a lot of storage and bandwidth."
+msgstr ""
+
 #: ../../apps/launcher/src/launch-options.tsx
 msgid "This file is outside the app's folder, so Quiver never moves or deletes it."
 msgstr "이 파일은 앱 폴더 밖에 있어서 Quiver가 옮기거나 삭제하지 않습니다."
@@ -6987,6 +7194,10 @@ msgstr "팁"
 #: ../../apps/launcher/src/discussions.tsx
 msgid "Title"
 msgstr "제목"
+
+#: ../../apps/launcher/src/cache-page.tsx
+msgid "Titles kept in the download cache"
+msgstr ""
 
 #. When something happened, as in "Updated today"
 #: ../ui/src/index.tsx
@@ -7144,6 +7355,11 @@ msgstr "제거 및 라이브러리에서 삭제…"
 msgid "Uninstall apps"
 msgstr "앱 제거"
 
+#. Download cache storage limit: none
+#: ../../apps/launcher/src/cache-page.tsx
+msgid "Unlimited"
+msgstr ""
+
 #. Moderation action
 #: ../../apps/launcher/src/discussions.tsx
 msgid "Unlock"
@@ -7180,6 +7396,7 @@ msgid "Up"
 msgstr "위로"
 
 #. On an app's card: the installed version is the newest there is
+#: ../../apps/launcher/src/cache-page.tsx
 #: ../../apps/launcher/src/library-tile.tsx
 msgid "Up to date"
 msgstr "최신 버전"
@@ -7358,6 +7575,10 @@ msgstr "10자 이상 입력하세요."
 #: ../../apps/launcher/src/controls.tsx
 msgid "Use controllers to move around Quiver"
 msgstr "컨트롤러로 Quiver 탐색"
+
+#: ../../apps/launcher/src/cache-page.tsx
+msgid "Use default"
+msgstr ""
 
 #: ../../apps/launcher/src/App.tsx
 msgid "Use my cloud saves"
@@ -7569,6 +7790,10 @@ msgstr "플레이어 평가"
 msgid "What players say"
 msgstr "플레이어 평가"
 
+#: ../../apps/launcher/src/cache-page.tsx
+msgid "What the download cache keeps"
+msgstr ""
+
 #: ../../apps/launcher/src/feedback.tsx
 msgid "What went wrong, and when? What did you try to fix it?"
 msgstr "무엇이 언제 잘못되었나요? 해결하려고 무엇을 시도했나요?"
@@ -7610,6 +7835,10 @@ msgstr "{name}이(가) 요청하면 이 파일을 고르세요: {0}"
 #: ../../apps/launcher/src/own-copy-settings.tsx
 msgid "When an app needs your own copy of a game, like a ROM or a disc image, Quiver looks for it in these folders, and nowhere else."
 msgstr "앱에 ROM이나 디스크 이미지 같은 내 게임 사본이 필요하면 Quiver는 이 폴더에서만 찾습니다."
+
+#: ../../apps/launcher/src/cache-page.tsx
+msgid "When it's full, the files used longest ago make room. The files of the versions you have installed always stay."
+msgstr ""
 
 #: ../../apps/launcher/src/setup.tsx
 msgid "Where apps install"
@@ -7866,6 +8095,10 @@ msgstr "라이브러리가 비어 있어요"
 #: ../../apps/launcher/src/setup.tsx
 msgid "Your library syncs across your devices, and you can review apps. Everything works without an account too."
 msgstr "라이브러리가 모든 기기에서 동기화되고, 앱 리뷰도 남길 수 있어요. 계정이 없어도 모든 기능을 쓸 수 있어요."
+
+#: ../../apps/launcher/src/cache-page.tsx
+msgid "Your own folder"
+msgstr ""
 
 #: ../../apps/launcher/src/settings-page.tsx
 msgid "Your own folders and programs"

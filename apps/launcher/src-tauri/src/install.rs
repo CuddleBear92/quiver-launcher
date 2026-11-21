@@ -50,6 +50,10 @@ pub struct InstallRequest {
     /// a public repository's file still downloads that way, as it did before the token was saved.
     #[serde(default)]
     pub fallback_url: Option<String>,
+    /// The download cache (cache.rs), when the player turned it on: the file is taken from it when it's there, and
+    /// kept in it once downloaded when `keep` says so.
+    #[serde(default)]
+    pub cache: Option<crate::cache::CacheUse>,
 }
 
 #[derive(Serialize)]
@@ -140,11 +144,30 @@ pub async fn install(
     fs::create_dir_all(&staging).map_err(text)?;
     let result = async {
         let mut file = staging.join(&filename);
-        let hash = {
-            let stop = std::pin::pin!(cancel.wait_for(|c| *c));
-            match futures_util::future::select(std::pin::pin!(download(&req, &file, &progress)), stop).await {
-                futures_util::future::Either::Left((hash, _)) => hash?,
-                futures_util::future::Either::Right(_) => return Err(CANCELLED.to_string()),
+        // The same file from the download cache, checked against its checksum there, rather than downloaded again.
+        let cached = match (&req.cache, req.checksum.as_deref()) {
+            (Some(cache), Some(checksum)) => {
+                let (cache, checksum, to) = (cache.clone(), checksum.to_string(), file.clone());
+                tokio::task::spawn_blocking(move || crate::cache::take(&cache, &checksum, &to).and_then(|_| crate::cache::hex_of(&checksum)))
+                    .await
+                    .ok()
+                    .flatten()
+            }
+            _ => None,
+        };
+        let from_cache = cached.is_some();
+        let hash = match cached {
+            Some(hash) => {
+                let size = fs::metadata(&file).map(|m| m.len()).ok();
+                progress(Progress { id: req.id.clone(), phase: "downloading", received: size.unwrap_or(0), total: size, setup: false });
+                hash
+            }
+            None => {
+                let stop = std::pin::pin!(cancel.wait_for(|c| *c));
+                match futures_util::future::select(std::pin::pin!(download(&req, &file, &progress)), stop).await {
+                    futures_util::future::Either::Left((hash, _)) => hash?,
+                    futures_util::future::Either::Right(_) => return Err(CANCELLED.to_string()),
+                }
             }
         };
         if *cancel.borrow() {
@@ -152,6 +175,11 @@ pub async fn install(
         }
         if !matches_checksum(req.checksum.as_deref(), &hash) {
             return Err(MISMATCH.to_string());
+        }
+        // Kept in the download cache, as checked: a cache that can't take it never stops the install.
+        if let Some(cache) = req.cache.clone().filter(|c| c.keep && !from_cache) {
+            let (kept, name, hash) = (file.clone(), filename.clone(), hash.clone());
+            let _ = tokio::task::spawn_blocking(move || crate::cache::keep(&cache, &kept, &name, &hash)).await;
         }
         // A host can name a file without its extension ("Game-v1.2-Windows"): it's named for what's in it.
         let filename = match named_for_contents(&filename, &file) {
@@ -380,6 +408,37 @@ fn refused(status: reqwest::StatusCode, url: &reqwest::Url) -> String {
 }
 
 /// Streams the file to disk, hashing as it goes; returns its SHA-256.
+/// Downloads a release file into the download cache alone, without installing it: the cache's own fetches (Every
+/// latest, Hoarder, Selected titles). Only a file with a checksum is kept, once it matches it. `cancel` turning true
+/// stops it with `CANCELLED`.
+pub async fn fetch_to_cache(req: InstallRequest, mut cancel: tokio::sync::watch::Receiver<bool>, progress: impl Fn(Progress)) -> Result<(), String> {
+    let cache = req.cache.clone().ok_or("No download cache to fetch into.")?;
+    let checksum = req.checksum.as_deref().and_then(crate::cache::hex_of).ok_or("Only a file with a checksum is cached.")?;
+    let filename = plain_name(&req.filename)?.to_string();
+    if crate::cache::has(Path::new(&cache.dir), &[checksum.clone()])[0] {
+        return Ok(());
+    }
+    // In the cache's own folder, so it's moved into place rather than copied across drives.
+    let incoming = Path::new(&cache.dir).join(".incoming");
+    fs::create_dir_all(&incoming).map_err(text)?;
+    let file = incoming.join(format!("{checksum}.part"));
+    let result = async {
+        let stop = std::pin::pin!(cancel.wait_for(|c| *c));
+        let hash = match futures_util::future::select(std::pin::pin!(download(&req, &file, &progress)), stop).await {
+            futures_util::future::Either::Left((hash, _)) => hash?,
+            futures_util::future::Either::Right(_) => return Err(CANCELLED.to_string()),
+        };
+        if hash != checksum {
+            return Err(MISMATCH.to_string());
+        }
+        let kept = file.clone();
+        tokio::task::spawn_blocking(move || crate::cache::keep(&cache, &kept, &filename, &hash)).await.map_err(text)?.map_err(text)
+    }
+    .await;
+    let _ = fs::remove_file(&file);
+    result
+}
+
 async fn download(req: &InstallRequest, to: &Path, progress: &impl Fn(Progress)) -> Result<String, String> {
     let client = reqwest::Client::builder().user_agent("QuiverLauncher/4").build().map_err(text)?;
     let failed = |_| "The download failed. Check your connection and try again.".to_string();
@@ -1091,9 +1150,51 @@ mod tests {
             program: None,
             github_token: github_token.map(Into::into),
             fallback_url,
+            cache: None,
         };
         let dir = tempfile::tempdir().unwrap();
         tauri::async_runtime::block_on(download(&req, &dir.path().join("game.zip"), &|_| {}))
+    }
+
+    #[test]
+    fn a_kept_file_installs_again_from_the_download_cache_without_downloading_it() {
+        let tmp = tempfile::tempdir().unwrap();
+        let (apps, cache) = (tmp.path().join("apps"), tmp.path().join("cache"));
+        let body = "the app's notes";
+        let checksum = format!("sha256:{}", hex::encode(Sha256::digest(body.as_bytes())));
+        let request = |url: String, keep: bool| InstallRequest {
+            id: "cached-app".into(),
+            url,
+            filename: "notes.txt".into(),
+            checksum: Some(checksum.clone()),
+            folder: "cached-app".into(),
+            dir: None,
+            into: None,
+            files_to_add: vec![],
+            version: "1.0".into(),
+            preferred: vec![],
+            program: None,
+            github_token: None,
+            fallback_url: None,
+            cache: Some(crate::cache::CacheUse { dir: cache.to_string_lossy().into(), keep, app: "cached-app".into(), version: "1.0".into(), ..Default::default() }),
+        };
+        let run = |req: InstallRequest| {
+            let (_cancel, cancelled) = tokio::sync::watch::channel(false);
+            tauri::async_runtime::block_on(install(&apps, req, cancelled, |_| {}))
+        };
+        let (port, _) = serve(move |_| format!("HTTP/1.1 200 OK\r\nContent-Length: {}\r\nConnection: close\r\n\r\n{body}", body.len()));
+        run(request(format!("http://127.0.0.1:{port}/notes.txt"), true)).unwrap();
+        assert!(crate::cache::has(&cache, &[checksum.clone()])[0], "kept once downloaded");
+        fs::remove_dir_all(apps.join("cached-app")).unwrap();
+        // Nothing listens there now: only the cache can have it.
+        let installed = run(request(format!("http://127.0.0.1:{port}/notes.txt"), false)).unwrap();
+        assert_eq!(installed.checksum, checksum);
+        assert_eq!(fs::read_to_string(apps.join("cached-app").join("notes.txt")).unwrap(), body);
+        // Without the cache, the same request fails to download.
+        let mut plain = request(format!("http://127.0.0.1:{port}/notes.txt"), false);
+        plain.cache = None;
+        fs::remove_dir_all(apps.join("cached-app")).unwrap();
+        assert!(run(plain).is_err());
     }
 
     #[test]
