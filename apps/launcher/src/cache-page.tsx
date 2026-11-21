@@ -314,20 +314,20 @@ function SelectedTitles({
             const size = sizeLabel(bytes);
             const art = entry && coverOf(entry);
             return (
-              <li key={app.id} className="download-row">
-                {/* The picture and the name open the app's page, as Downloads' rows do: the picture for a controller too. */}
-                <button type="button" className="download-thumb" aria-label={shown} disabled={!entry} onClick={() => entry && onOpen(entry)}>
-                  <Artwork src={art} sources={art ? cardSources(art, "100px") : undefined} name={shown} className={entry?.libraryArt?.header || entry?.libraryArt?.capsule ? "cover-photo" : ""} />
-                </button>
-                <div className="download-names">
-                  <button type="button" className="download-name" tabIndex={-1} disabled={!entry} onClick={() => entry && onOpen(entry)}>
-                    {shown}
-                  </button>
-                  <span className="download-detail">
-                    {files ? [size, plural(files, { one: "# file", other: "# files" })].join(" · ") : t({ message: "Not kept yet", comment: "Settings › Cache: a selected app none of whose files are in the cache yet" })}
+              <li key={app.id} className="cache-title">
+                {/* The whole row opens the app's page; its two buttons sit over it, at its end. */}
+                <button type="button" className="cache-title-open" disabled={!entry} onClick={() => entry && onOpen(entry)}>
+                  <span className="download-thumb">
+                    <Artwork src={art} sources={art ? cardSources(art, "100px") : undefined} name={shown} className={entry?.libraryArt?.header || entry?.libraryArt?.capsule ? "cover-photo" : ""} />
                   </span>
-                </div>
-                <div className="download-action">
+                  <span className="download-names">
+                    <span className="download-name">{shown}</span>
+                    <span className="download-detail">
+                      {files ? [size, plural(files, { one: "# file", other: "# files" })].join(" · ") : t({ message: "Not kept yet", comment: "Settings › Cache: a selected app none of whose files are in the cache yet" })}
+                    </span>
+                  </span>
+                </button>
+                <div className="cache-title-actions">
                   <button type="button" className="save-button" aria-label={t`Open ${shown}'s folder in the download cache`} title={t`Open folder`} disabled={!files} onClick={() => onFolder(app.id)}>
                     <FolderOpen size={14} aria-hidden="true" />
                   </button>
