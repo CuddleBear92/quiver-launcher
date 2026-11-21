@@ -49,6 +49,9 @@ export function standInForRust({ api, state = {}, config: more = {}, maximized =
     },
     cache_remove: ({ hashes }) => void (window.__cache.files = hashes ? window.__cache.files.filter((f) => !hashes.includes(f.hash)) : []),
     cache_clean: () => 0,
+    // A README kept for an app (window.__cache.readmes, by app id), and those kept since.
+    cache_readme_save: ({ app, readme, images }) => void (window.__cache.saved ??= []).push({ app, readme, images }) || true,
+    cache_readme_read: ({ app }) => window.__cache.readmes?.[app] ?? null,
     cache_open_app: ({ app }) => void window.__opened.push(`cache:${app}`),
     config: () => config,
     // The computer's PC specs (specs.rs), unless a test's config says otherwise (`pcSpecs`).
@@ -93,7 +96,10 @@ export function standInForRust({ api, state = {}, config: more = {}, maximized =
     },
     // A download that stays under way till a test finishes it (window.__installs) or Cancel stops it: what an install
     // does is the real app's to show (the tests one folder up).
-    install: ({ request }) => new Promise((resolve, reject) => window.__installs.set(request.id, { resolve, reject })),
+    install: ({ request }) => {
+      (window.__installRequests ??= []).push(request);
+      return new Promise((resolve, reject) => window.__installs.set(request.id, { resolve, reject }));
+    },
     cancel_install: ({ id }) => {
       window.__installs.get(id)?.reject("cancelled");
       window.__installs.delete(id);
