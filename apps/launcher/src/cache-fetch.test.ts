@@ -93,6 +93,29 @@ describe("a run of the cache's fetches", () => {
     ]);
   });
 
+  test("Installed only: the installed version's file, by its checksum, not the newest release's; asked for, never by itself", async () => {
+    const both = { a: [rel("2", [file("a2.zip", sum("1"))]), rel("1", [file("a1.zip", sum("2")), { ...file("a1-linux.tar.gz", sum("5")), os: "linux" as const }])] };
+    const { d, fetched } = deps(catalog, both);
+    d.installed = () => [{ id: "a", slug: "a", version: "v1", checksum: sum("2") }];
+    await runCacheFetch(cacheOf({ mode: "installed" }, "/cache"), d, () => {}, () => false);
+    expect(fetched.map((r) => r.filename)).toEqual(["a1.zip"]);
+    // Kept as its latest installed version alone.
+    expect(fetched[0].cache).toMatchObject({ app: "a", version: "1", onlyThis: true });
+    expect(d.client.apps).not.toHaveBeenCalled();
+    // Keeping every system's files: the release's other builds too.
+    const all = deps(catalog, both);
+    all.d.installed = d.installed;
+    await runCacheFetch(cacheOf({ mode: "installed", allPlatforms: true }, "/cache"), all.d, () => {}, () => false);
+    expect(all.fetched.map((r) => r.filename)).toEqual(["a1.zip", "a1-linux.tar.gz"]);
+  });
+
+  test("asked for some apps alone, a run goes through only those", async () => {
+    const { d, fetched } = deps(catalog, releases);
+    d.installed = () => ["a", "b", "c"].map((id) => ({ id, slug: id, version: releases[id as "a"][0].version, checksum: releases[id as "a"][0].assets[0].checksum }));
+    await runCacheFetch(cacheOf({ mode: "installed" }, "/cache"), d, () => {}, () => false, [], ["b"]);
+    expect(fetched.map((r) => r.filename)).toEqual(["b5.zip"]);
+  });
+
   test("a file that fails counts, and the run goes on; being stopped ends it", async () => {
     const { d, fetched } = deps(catalog, releases);
     const real = d.native.cacheFetch;

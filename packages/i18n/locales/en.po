@@ -412,6 +412,7 @@ msgstr "{failed, plural, one {# download didn't finish.} other {# downloads didn
 msgid "{file} was removed from {listed} by its developer."
 msgstr "{file} was removed from {listed} by its developer."
 
+#: ../../apps/launcher/src/cache-page.tsx
 #: ../../apps/launcher/src/detail.tsx
 msgid "{files, plural, one {# file} other {# files}}"
 msgstr "{files, plural, one {# file} other {# files}}"
@@ -1521,6 +1522,10 @@ msgstr "Apps you add from GitLab get their releases from GitLab itself, which al
 msgid "Apps you don't have yet show with Get; nothing downloads until you press it."
 msgstr "Apps you don't have yet show with Get; nothing downloads until you press it."
 
+#: ../../apps/launcher/src/cache-page.tsx
+msgid "Apps you install from now on are kept as they install. Check now keeps the version you have installed of every app."
+msgstr "Apps you install from now on are kept as they install. Check now keeps the version you have installed of every app."
+
 #: ../../apps/launcher/src/own.tsx
 msgid "Artwork and consoles from the game"
 msgstr "Artwork and consoles from the game"
@@ -1744,6 +1749,11 @@ msgstr "By name"
 #: ../../apps/launcher/src/settings-page.tsx
 msgid "Cache"
 msgstr "Cache"
+
+#. Menu item: the download cache keeps this installed app's file now
+#: ../../apps/launcher/src/card-menu.tsx
+msgid "Cache now"
+msgstr "Cache now"
 
 #: ../../apps/launcher/src/game.tsx
 msgid "Called {title} in {region}"
@@ -3745,7 +3755,9 @@ msgid "Keep every system's files"
 msgstr "Keep every system's files"
 
 #. Toggle on an app's Manage tab: the download cache keeps this app's newest release
+#. Toggle on an app's Manage tab: the download cache keeps this app's newest release
 #: ../../apps/launcher/src/cache-page.tsx
+#: ../../apps/launcher/src/card-menu.tsx
 msgid "Keep in download cache"
 msgstr "Keep in download cache"
 
@@ -4743,6 +4755,11 @@ msgstr "Not installed only"
 #: ../../apps/launcher/src/old-library.tsx
 msgid "Not installed yet"
 msgstr "Not installed yet"
+
+#. Settings › Cache: a selected app none of whose files are in the cache yet
+#: ../../apps/launcher/src/cache-page.tsx
+msgid "Not kept yet"
+msgstr "Not kept yet"
 
 #: ../../apps/launcher/src/app-updates.tsx
 #: ../../apps/launcher/src/App.tsx
@@ -6161,6 +6178,8 @@ msgid "Selected apps"
 msgstr "Selected apps"
 
 #. Download cache mode
+#. Heading in Settings › Cache over the apps it keeps
+#: ../../apps/launcher/src/cache-page.tsx
 #: ../../apps/launcher/src/cache.ts
 msgid "Selected titles"
 msgstr "Selected titles"
@@ -6689,6 +6708,11 @@ msgstr "Stop keeping {shown}"
 #: ../../apps/launcher/src/sync-folder-page.tsx
 msgid "Stop keeping backups in this folder? The backups in it stay there, and the ones on this computer aren't touched."
 msgstr "Stop keeping backups in this folder? The backups in it stay there, and the ones on this computer aren't touched."
+
+#. Menu item: the download cache no longer keeps this app's newest release
+#: ../../apps/launcher/src/card-menu.tsx
+msgid "Stop keeping in download cache"
+msgstr "Stop keeping in download cache"
 
 #: ../../apps/launcher/src/own-copy-settings.tsx
 msgid "Stop looking in {folder} for {console}"

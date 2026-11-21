@@ -34,6 +34,7 @@ import { beforePlay, onSent, retries, sendBackup, sendCurrent, type CloudApi, ty
 import { activate, pick, type Language } from "@quiverlauncher/i18n";
 import { providerFetch } from "./provider-fetch";
 import { cacheOf, cacheUse, protectedFiles, type CacheSettings } from "./cache";
+import { requestCache } from "./cache-signal";
 
 /** The language the launcher shows in: the one picked in Settings, or else the system's nearest. */
 export const languageOf = (settings: Settings): Language => settings.language ?? pick(navigator.languages);
@@ -2455,6 +2456,8 @@ function LauncherState({ saved, children }: { saved: Saved; children: ReactNode 
         program: was?.installer ? was.program : undefined,
         ...(cacheNow && { cache: cacheUse(cacheNow, { id: entry.id, version: release.version, os: asset.os }, protectedFiles(installs)) }),
       });
+      // Installed only, keeping every system's files: the release's other builds come once it's in, in the background.
+      if (cacheNow?.mode === "installed" && cacheNow.allPlatforms && !custom) requestCache([entry.id]);
       // A Windows installer's program, when Quiver can't tell which it is: the player says, as in Quiver Launcher 3.
       const msi = Boolean(done.installer);
       const program = msi ? (done.program ?? (await native.pickProgram(done.location ?? undefined).catch(() => null)) ?? undefined) : undefined;

@@ -31,7 +31,8 @@ pub struct CacheUse {
     pub version: String,
     #[serde(default)]
     pub os: Option<String>,
-    /// Installed only: the app's other files go once this one is in, so the cache has its latest installed alone.
+    /// Installed only: the app's files of other versions go once this one is in, so the cache has its latest installed
+    /// version alone (with every system's files of it, when those are kept).
     #[serde(default)]
     pub only_this: bool,
     /// The most the cache keeps, in bytes; none for no limit.
@@ -180,10 +181,10 @@ pub fn keep(cache: &CacheUse, file: &Path, filename: &str, hash: &str) -> io::Re
             entries.push(Cached { hash: hex.clone(), filename, size, apps: vec![owner], cached_at: at, used_at: at });
         }
     }
-    // Installed only: this app's latest installed file alone, its others gone (or left to the apps that share them).
+    // Installed only: this app's latest installed version alone, its others gone (or left to the apps that share them).
     if cache.only_this {
         for entry in entries.iter_mut().filter(|e| e.hash != hex) {
-            entry.apps.retain(|o| o.app != cache.app);
+            entry.apps.retain(|o| o.app != cache.app || o.version == cache.version);
         }
         let orphans: Vec<String> = entries.iter().filter(|e| e.apps.is_empty()).map(|e| e.hash.clone()).collect();
         for hash in &orphans {
@@ -350,6 +351,18 @@ mod tests {
         assert!(left.contains(&shared));
         let b = status(&cache).entries.into_iter().find(|e| e.hash == shared).unwrap();
         assert_eq!(b.apps.iter().map(|o| o.app.as_str()).collect::<Vec<_>>(), vec!["b"]);
+    }
+
+    #[test]
+    fn installed_only_keeps_every_systems_file_of_the_version_installed() {
+        let (tmp, cache) = setup();
+        let only = |v: &str| CacheUse { only_this: true, ..uses(&cache, "a", v) };
+        let old = put(tmp.path(), &only("1.0"), "v1.zip", b"one");
+        let win = put(tmp.path(), &only("2.0"), "v2-windows.zip", b"two for windows");
+        let linux = put(tmp.path(), &only("2.0"), "v2-linux.tar.gz", b"two for linux");
+        let left: HashSet<String> = status(&cache).entries.into_iter().map(|e| e.hash).collect();
+        assert_eq!(left, HashSet::from([win, linux]));
+        assert!(!cache.join(old).exists());
     }
 
     #[test]

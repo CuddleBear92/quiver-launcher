@@ -12,7 +12,9 @@ import { CACHE_MODES, LIMITS_GB, cacheOf, fetches, isSelected, protectedFiles, w
 import { isOwn } from "./custom";
 import { fetchNow, useFetchState } from "./cache-fetch";
 import { sizeLabel } from "./downloads";
-import { native, type CacheStatus } from "./native";
+import { native, type CachedFile, type CacheStatus } from "./native";
+import type { Entry } from "@quiverlauncher/api";
+import { Artwork, cardSources, coverOf } from "@quiverlauncher/ui";
 import { useLauncher } from "./store";
 
 const ICONS: Record<CacheMode, ReactNode> = {
@@ -32,7 +34,7 @@ function limitName(gb: number) {
 }
 
 export function CacheSettingsSection() {
-  const { settings, setSettings, config, installs, catalog } = useLauncher();
+  const { settings, setSettings, config, installs } = useLauncher();
   const cache = cacheOf(settings.cache, config.cacheDir ?? "");
   const [status, setStatus] = useState<CacheStatus | null>(null);
   const [said, setSaid] = useState<{ text: string; error?: true } | null>(null);
@@ -107,12 +109,10 @@ export function CacheSettingsSection() {
       )}
       {cache.on && (
         <>
-          {cache.mode !== "installed" && (
-            <label className="toggle">
-              <input type="checkbox" checked={cache.allPlatforms} onChange={(e) => set((c) => ({ ...c, allPlatforms: e.target.checked || undefined }))} />
-              <Trans comment="Download cache setting: keep a release's builds for Windows, Linux, macOS and Android, not only this computer's">Keep every system's files</Trans>
-            </label>
-          )}
+          <label className="toggle">
+            <input type="checkbox" checked={cache.allPlatforms} onChange={(e) => set((c) => ({ ...c, allPlatforms: e.target.checked || undefined }))} />
+            <Trans comment="Download cache setting: keep a release's builds for Windows, Linux, macOS and Android, not only this computer's">Keep every system's files</Trans>
+          </label>
           <Field
             label={<Trans comment="Download cache setting: the most storage it uses">Storage limit</Trans>}
             hint={<Trans>When it's full, the files used longest ago make room. The files of the versions you have installed always stay.</Trans>}
@@ -146,8 +146,7 @@ export function CacheSettingsSection() {
                 : t`Nothing kept yet.`}
             </p>
           </div>
-          {fetches(cache) && <FetchProgress />}
-          {cache.mode === "selected" && <SelectedTitles apps={cache.apps} name={(id) => catalog[id]?.projectName} onRemove={(app) => set((c) => withSelected(c, app, false))} />}
+          {(fetches(cache) || cache.mode === "installed") && <FetchProgress manual={cache.mode === "installed"} />}
         </>
       )}
       <div className="save-row cache-folder">
@@ -184,12 +183,13 @@ export function CacheSettingsSection() {
           </button>
         ))}
       {said && <p className={said.error ? "save-said error" : "save-said"}>{said.text}</p>}
+      {cache.mode === "selected" && <SelectedTitles apps={cache.apps} kept={status?.entries ?? []} onRemove={(app) => set((c) => withSelected(c, app, false))} />}
     </section>
   );
 }
 
 /** For the modes that download by themselves: what's under way, or how the last run went, and Check now or Stop. */
-function FetchProgress() {
+function FetchProgress({ manual }: { manual: boolean }) {
   const s = useFetchState();
   const c = s.current;
   const of = s.ofApps;
@@ -228,7 +228,11 @@ function FetchProgress() {
             </span>
           </>
         ) : (
-          <span>{t`Downloads start shortly after Quiver opens, then every 6 hours.`}</span>
+          <span>
+            {manual
+              ? t`Apps you install from now on are kept as they install. Check now keeps the version you have installed of every app.`
+              : t`Downloads start shortly after Quiver opens, then every 6 hours.`}
+          </span>
         )}
       </span>
       {s.running ? (
@@ -244,28 +248,68 @@ function FetchProgress() {
   );
 }
 
-/** Selected titles' apps, each removable here; they're added from Manage on an app's page. */
-function SelectedTitles({ apps, name, onRemove }: { apps: { id: string; slug: string }[]; name: (id: string) => string | undefined; onRemove: (app: { id: string; slug: string }) => void }) {
-  if (!apps.length)
-    return (
-      <p className="muted">
-        <Trans>No titles chosen yet. Open an app's page, then Manage, and turn on Keep in download cache.</Trans>
-      </p>
-    );
+/**
+ * Selected titles' apps, at the foot of the page: each with its picture, as Downloads has them, and how much of the
+ * cache its files take, the largest first, in a box that scrolls past a few. Each can be taken off here; they're
+ * added from Manage on an app's page or its menu.
+ */
+function SelectedTitles({ apps, kept, onRemove }: { apps: { id: string; slug: string }[]; kept: CachedFile[]; onRemove: (app: { id: string; slug: string }) => void }) {
+  const { catalog, client } = useLauncher();
+  // The catalog's details of the ones that aren't in the library, for their pictures and names.
+  const [looked, setLooked] = useState<Record<string, Entry | null>>({});
+  useEffect(() => {
+    for (const app of apps) {
+      if (catalog[app.id] || app.id in looked) continue;
+      setLooked((l) => ({ ...l, [app.id]: null }));
+      client.app(app.slug).then(
+        (d) => setLooked((l) => ({ ...l, [app.id]: d.entry })),
+        () => {},
+      );
+    }
+  }, [apps.map((a) => a.id).join()]); // eslint-disable-line react-hooks/exhaustive-deps
+  const rows = apps
+    .map((app) => {
+      const files = kept.filter((f) => f.apps.some((o) => o.app === app.id));
+      return { app, entry: catalog[app.id] ?? looked[app.id] ?? undefined, bytes: files.reduce((n, f) => n + f.size, 0), files: files.length };
+    })
+    .sort((a, b) => b.bytes - a.bytes || (a.entry?.projectName ?? a.app.slug).localeCompare(b.entry?.projectName ?? b.app.slug));
   return (
-    <ul className="cache-titles" aria-label={t`Titles kept in the download cache`}>
-      {apps.map((app) => {
-        const shown = name(app.id) ?? app.slug;
-        return (
-          <li key={app.id} className="save-row">
-            <span className="save-main">{shown}</span>
-            <button type="button" className="save-button" aria-label={t`Stop keeping ${shown}`} onClick={() => onRemove(app)}>
-              <X size={14} aria-hidden="true" />
-            </button>
-          </li>
-        );
-      })}
-    </ul>
+    <div className="cache-titles-box">
+      <h4>
+        <Trans comment="Heading in Settings › Cache over the apps it keeps">Selected titles</Trans> <span className="download-count">({apps.length})</span>
+      </h4>
+      {!apps.length ? (
+        <p className="muted">
+          <Trans>No titles chosen yet. Open an app's page, then Manage, and turn on Keep in download cache.</Trans>
+        </p>
+      ) : (
+        <ul className="cache-titles" aria-label={t`Titles kept in the download cache`}>
+          {rows.map(({ app, entry, bytes, files }) => {
+            const shown = entry?.projectName ?? app.slug;
+            const size = sizeLabel(bytes);
+            const art = entry && coverOf(entry);
+            return (
+              <li key={app.id} className="download-row">
+                <span className="download-thumb">
+                  <Artwork src={art} sources={art ? cardSources(art, "100px") : undefined} name={shown} className={entry?.libraryArt?.header || entry?.libraryArt?.capsule ? "cover-photo" : ""} />
+                </span>
+                <div className="download-names">
+                  <span className="download-name">{shown}</span>
+                  <span className="download-detail">
+                    {files ? [size, plural(files, { one: "# file", other: "# files" })].join(" · ") : t({ message: "Not kept yet", comment: "Settings › Cache: a selected app none of whose files are in the cache yet" })}
+                  </span>
+                </div>
+                <div className="download-action">
+                  <button type="button" className="save-button" aria-label={t`Stop keeping ${shown}`} onClick={() => onRemove(app)}>
+                    <X size={14} aria-hidden="true" />
+                  </button>
+                </div>
+              </li>
+            );
+          })}
+        </ul>
+      )}
+    </div>
   );
 }
 

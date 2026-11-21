@@ -139,5 +139,25 @@ export function cacheTargets(entry: Pick<Entry, "id" | "slug" | "projectName" | 
   });
 }
 
+/**
+ * Installed only's files of an installed app, from the release of its version: the file installed, by its checksum, or
+ * with `allPlatforms` the release's builds for every system. An install Quiver has no checksum for keeps the file an
+ * install would pick here.
+ */
+export function installedTargets(entry: Pick<Entry, "id" | "slug" | "projectName" | "launcher">, release: Release, installed: { checksum?: string }, cache: Cache, here: { os: Os; arch: string }): CacheTarget[] {
+  const filter = (release.installationOverride ?? entry.launcher)?.releaseAssetFilter;
+  const files = cache.allPlatforms
+    ? releaseFiles(release.assets)
+    : installed.checksum
+      ? release.assets.filter((a) => a.checksum === installed.checksum)
+      : bestAssets(release.assets, here.os, here.arch, filter).slice(0, 1);
+  return files.flatMap((asset) =>
+    asset.checksum ? [{ app: entry.id, slug: entry.slug, name: entry.projectName, version: release.version, asset: asset as Asset & { checksum: string } }] : [],
+  );
+}
+
+/** The same version, written either way ("v1.2" and "1.2"). */
+export const sameVersion = (a: string, b: string) => a.trim().replace(/^v/i, "") === b.trim().replace(/^v/i, "");
+
 /** Whether a file fits in the room left, so a fetch never pushes out what's kept to make room for more. */
 export const fits = (asset: Pick<Asset, "size">, used: number, limit?: number) => limit === undefined || used + (asset.size ?? 0) <= limit;

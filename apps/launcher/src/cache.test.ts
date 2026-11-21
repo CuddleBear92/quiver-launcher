@@ -1,6 +1,6 @@
 import { describe, expect, test } from "vitest";
 import type { Asset, Release } from "@quiverlauncher/api";
-import { DEFAULT_LIMIT_GB, cacheOf, cacheTargets, cacheUse, fits, isSelected, protectedFiles, withSelected } from "./cache";
+import { DEFAULT_LIMIT_GB, cacheOf, cacheTargets, cacheUse, fits, installedTargets, isSelected, protectedFiles, sameVersion, withSelected } from "./cache";
 
 const GB = 1024 ** 3;
 const sum = (c: string) => `sha256:${c.repeat(64)}`;
@@ -74,4 +74,29 @@ test("a fetch only takes what fits, never pushing out what's kept", () => {
   expect(fits({ size: 40 }, 60, 100)).toBe(true);
   expect(fits({ size: 41 }, 60, 100)).toBe(false);
   expect(fits({ size: 10 ** 15 }, 0, undefined)).toBe(true);
+});
+
+describe("Installed only's files of an installed app", () => {
+  const release = { id: "1", version: "1.0", releasedAt: 0, prerelease: false, assets: [
+    { id: "w", url: "u", filename: "app-win.zip", os: "windows", architecture: "x64", format: "zip", checksum: `sha256:${"a".repeat(64)}` },
+    { id: "w2", url: "u", filename: "app-win-portable.zip", os: "windows", architecture: "x64", format: "zip", checksum: `sha256:${"b".repeat(64)}` },
+    { id: "l", url: "u", filename: "app-linux.tar.gz", os: "linux", architecture: "x64", format: "tar.gz", checksum: `sha256:${"c".repeat(64)}` },
+  ] } as Release;
+  const app = { id: "app", slug: "app", projectName: "App", launcher: {} as never };
+  const here = { os: "windows" as const, arch: "x64" };
+  const names = (installed: { checksum?: string }, allPlatforms = false) => installedTargets(app, release, installed, cacheOf({ mode: "installed", allPlatforms }, "/c"), here).map((t) => t.asset.filename);
+  test("the very file installed, though the release has others for this computer", () => {
+    expect(names({ checksum: `sha256:${"b".repeat(64)}` })).toEqual(["app-win-portable.zip"]);
+  });
+  test("every system's builds when those are kept", () => {
+    expect(names({ checksum: `sha256:${"b".repeat(64)}` }, true)).toEqual(["app-win.zip", "app-win-portable.zip", "app-linux.tar.gz"]);
+  });
+  test("without its checksum, the file an install picks here; none when the file installed isn't the release's any more", () => {
+    expect(names({})).toEqual(["app-win.zip"]);
+    expect(names({ checksum: "sha256:gone" })).toEqual([]);
+  });
+  test("a version reads the same with its v or without", () => {
+    expect(sameVersion("v1.2", "1.2")).toBe(true);
+    expect(sameVersion("1.2", "1.20")).toBe(false);
+  });
 });

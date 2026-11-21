@@ -413,6 +413,7 @@ msgstr "{failed, plural, one {# 個下載未能完成。} other {# 個下載未�
 msgid "{file} was removed from {listed} by its developer."
 msgstr "開發者已從 {listed} 中移除 {file}。"
 
+#: ../../apps/launcher/src/cache-page.tsx
 #: ../../apps/launcher/src/detail.tsx
 msgid "{files, plural, one {# file} other {# files}}"
 msgstr "{files, plural, one {# 個檔案} other {# 個檔案}}"
@@ -1522,6 +1523,10 @@ msgstr "你從 GitLab 新增的應用程式會直接從 GitLab 獲取版本。�
 msgid "Apps you don't have yet show with Get; nothing downloads until you press it."
 msgstr "尚未擁有的應用程式會顯示“獲取”；只有按下按鈕後才會開始下載。"
 
+#: ../../apps/launcher/src/cache-page.tsx
+msgid "Apps you install from now on are kept as they install. Check now keeps the version you have installed of every app."
+msgstr "從現在起安裝的應用程式會在安裝時保留。「立即檢查」會保留每個應用程式已安裝的版本。"
+
 #: ../../apps/launcher/src/own.tsx
 msgid "Artwork and consoles from the game"
 msgstr "遊戲的插畫和主機"
@@ -1745,6 +1750,11 @@ msgstr "依名稱"
 #: ../../apps/launcher/src/settings-page.tsx
 msgid "Cache"
 msgstr "快取"
+
+#. Menu item: the download cache keeps this installed app's file now
+#: ../../apps/launcher/src/card-menu.tsx
+msgid "Cache now"
+msgstr "立即快取"
 
 #: ../../apps/launcher/src/game.tsx
 msgid "Called {title} in {region}"
@@ -3746,7 +3756,9 @@ msgid "Keep every system's files"
 msgstr "保留所有系統的檔案"
 
 #. Toggle on an app's Manage tab: the download cache keeps this app's newest release
+#. Toggle on an app's Manage tab: the download cache keeps this app's newest release
 #: ../../apps/launcher/src/cache-page.tsx
+#: ../../apps/launcher/src/card-menu.tsx
 msgid "Keep in download cache"
 msgstr "保留在下載快取中"
 
@@ -4744,6 +4756,11 @@ msgstr "僅未安裝"
 #: ../../apps/launcher/src/old-library.tsx
 msgid "Not installed yet"
 msgstr "尚未安裝"
+
+#. Settings › Cache: a selected app none of whose files are in the cache yet
+#: ../../apps/launcher/src/cache-page.tsx
+msgid "Not kept yet"
+msgstr "尚未保留"
 
 #: ../../apps/launcher/src/app-updates.tsx
 #: ../../apps/launcher/src/App.tsx
@@ -6162,6 +6179,8 @@ msgid "Selected apps"
 msgstr "所選應用程式"
 
 #. Download cache mode
+#. Heading in Settings › Cache over the apps it keeps
+#: ../../apps/launcher/src/cache-page.tsx
 #: ../../apps/launcher/src/cache.ts
 msgid "Selected titles"
 msgstr "所選作品"
@@ -6690,6 +6709,11 @@ msgstr "不再保留 {shown}"
 #: ../../apps/launcher/src/sync-folder-page.tsx
 msgid "Stop keeping backups in this folder? The backups in it stay there, and the ones on this computer aren't touched."
 msgstr ""
+
+#. Menu item: the download cache no longer keeps this app's newest release
+#: ../../apps/launcher/src/card-menu.tsx
+msgid "Stop keeping in download cache"
+msgstr "不再保留在下載快取中"
 
 #: ../../apps/launcher/src/own-copy-settings.tsx
 msgid "Stop looking in {folder} for {console}"
