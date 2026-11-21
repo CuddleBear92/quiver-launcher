@@ -281,6 +281,16 @@ fn cache_fetch_cancel(fetching: State<CacheFetching>) {
     }
 }
 
+/// Clears what a launcher closed mid-download left in the download cache (cache.rs's `clean`): only while no fetch is
+/// under way, so one coming in is never taken from under it. How many files went.
+#[tauri::command]
+async fn cache_clean(app: tauri::AppHandle, dir: String) -> Result<usize, String> {
+    if app.state::<CacheFetching>().0.lock().unwrap().is_some() {
+        return Ok(0);
+    }
+    tauri::async_runtime::spawn_blocking(move || cache::clean(Path::new(&dir))).await.map_err(|e| e.to_string())
+}
+
 /// What's in the download cache. `names`: apps' ids to their slugs, for files an older build kept without one, which
 /// move to their app's folder.
 #[tauri::command]
@@ -2612,6 +2622,7 @@ pub fn run() {
             cache_fetch,
             cache_fetch_cancel,
             cache_status,
+            cache_clean,
             cache_has,
             cache_trim,
             cache_remove,

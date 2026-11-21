@@ -341,6 +341,41 @@ pub fn status(dir: &Path, names: &HashMap<String, String>) -> Status {
     Status { files: entries.len(), bytes: entries.iter().map(|e| e.size).sum(), entries }
 }
 
+/// Clears what a launcher closed mid-download left behind (stopped by an antivirus, say): the downloads still coming
+/// in (`.incoming`), a file half put in place (`<file>.part`) and a half-written index, and the folders that leaves
+/// empty. Only for when no fetch is under way. Resolves to how many files went.
+pub fn clean(dir: &Path) -> usize {
+    let _guard = LOCK.lock().unwrap_or_else(|e| e.into_inner());
+    let kept: HashSet<PathBuf> = read_index(dir).iter().map(|e| path_of(dir, e)).collect();
+    let mut gone = 0;
+    let incoming = dir.join(".incoming");
+    if incoming.is_dir() {
+        gone += count_files(&incoming);
+        let _ = fs::remove_dir_all(&incoming);
+    }
+    if fs::remove_file(dir.join(format!("{INDEX}.tmp"))).is_ok() {
+        gone += 1;
+    }
+    // `<app>/<version>/<file>.part`, never a file the index has.
+    let Ok(apps) = fs::read_dir(dir) else { return gone };
+    for app in apps.flatten().map(|e| e.path()).filter(|p| p.is_dir()) {
+        for version in fs::read_dir(&app).into_iter().flatten().flatten().map(|e| e.path()).filter(|p| p.is_dir()) {
+            for file in fs::read_dir(&version).into_iter().flatten().flatten().map(|e| e.path()) {
+                if file.is_file() && file.extension().is_some_and(|x| x == "part") && !kept.contains(&file) && fs::remove_file(&file).is_ok() {
+                    gone += 1;
+                }
+            }
+            let _ = fs::remove_dir(&version);
+        }
+        let _ = fs::remove_dir(&app);
+    }
+    gone
+}
+
+fn count_files(dir: &Path) -> usize {
+    fs::read_dir(dir).into_iter().flatten().flatten().map(|e| e.path()).map(|p| if p.is_dir() { count_files(&p) } else { 1 }).sum()
+}
+
 /// An app's folder in the cache, where its files are: none while none is kept.
 pub fn app_folder(dir: &Path, app: &str) -> Option<PathBuf> {
     let entries = read_index(dir);
@@ -586,6 +621,29 @@ mod tests {
         let before = paths(&cache);
         status(&cache, &HashMap::new());
         assert_eq!(paths(&cache), before);
+    }
+
+    #[test]
+    fn what_a_launcher_closed_mid_download_left_is_cleared_but_nothing_kept() {
+        let (tmp, cache) = setup();
+        put(tmp.path(), &uses(&cache, "a", "1.0"), "game.zip", b"kept");
+        // A fetch an antivirus stopped by closing the launcher, and a file cut off as it went in.
+        fs::create_dir_all(cache.join(".incoming/bad-app/2.0")).unwrap();
+        fs::write(cache.join(".incoming/bad-app/2.0/Bad.zip"), b"flagged").unwrap();
+        fs::write(cache.join("a/1.0/other.zip.part"), b"half").unwrap();
+        fs::create_dir_all(cache.join("b/3.0")).unwrap();
+        fs::write(cache.join("b/3.0/b.zip.part"), b"half").unwrap();
+        fs::write(cache.join("index.json.tmp"), b"{").unwrap();
+        fs::write(cache.join("players-own.part"), b"theirs").unwrap();
+        assert_eq!(clean(&cache), 4);
+        assert!(!cache.join(".incoming").exists() && !cache.join("b").exists() && !cache.join("index.json.tmp").exists());
+        assert!(!cache.join("a/1.0/other.zip.part").exists());
+        // What's kept stays, and so does what isn't Quiver's.
+        assert_eq!(fs::read(cache.join("a/1.0/game.zip")).unwrap(), b"kept");
+        assert!(cache.join("players-own.part").exists());
+        assert_eq!(status(&cache, &HashMap::new()).files, 1);
+        assert_eq!(clean(&cache), 0);
+        assert_eq!(clean(&tmp.path().join("no-cache-yet")), 0);
     }
 
     #[test]

@@ -260,9 +260,15 @@ export function useDownloadCache() {
       }).catch(() => {}),
     [],
   );
-  // Files an older build kept by hash moved to their apps' folders, once, as soon as the launcher starts.
+  // As soon as the launcher starts, before its first fetch: what a launcher closed mid-download left cleared (an
+  // antivirus can close it as it stops a file), then files an older build kept by hash moved to their apps' folders.
   useEffect(() => {
-    if (cache.on) void native.cacheStatus(cache.dir, cacheNames(now.current.catalog, cache.apps)).catch(() => {});
+    if (!cache.on) return;
+    void native
+      .cacheClean(cache.dir)
+      .catch(() => 0)
+      .then(() => native.cacheStatus(cache.dir, cacheNames(now.current.catalog, cache.apps)))
+      .catch(() => {});
   }, [cache.on, cache.dir]); // eslint-disable-line react-hooks/exhaustive-deps
   useCacheFetcher(
     cache,

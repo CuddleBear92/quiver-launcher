@@ -328,6 +328,8 @@ export const native = {
   /** What's in the cache. `names`, apps' ids to their slugs, names the folders of files an older build kept by hash, which move to them. */
   cacheStatus: (dir: string, names?: Record<string, string>) => invoke<CacheStatus>("cache_status", { dir, names: names ?? null }),
   cacheHas: (dir: string, checksums: string[]) => invoke<boolean[]>("cache_has", { dir, checksums }),
+  /** Clears what a launcher closed mid-download left in the cache (`.incoming`, half-written files); nothing while a fetch is under way. How many files went. */
+  cacheClean: (dir: string) => invoke<number>("cache_clean", { dir }),
   /** Rotates the cache down to `limit` bytes (null: no limit), never the files of `protect`. */
   cacheTrim: (dir: string, limit: number | null, protect: string[]) => invoke<void>("cache_trim", { dir, limit, protect }),
   /** Removes these files (by hash), or every one Quiver kept there. */
