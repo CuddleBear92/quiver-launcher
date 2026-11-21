@@ -4946,11 +4946,16 @@ msgstr "열기"
 msgid "Open {app} in the catalog's admin pages on quiverlauncher.com"
 msgstr "quiverlauncher.com의 카탈로그 관리자 페이지에서 {app} 열기"
 
+#: ../../apps/launcher/src/cache-page.tsx
+msgid "Open {shown}'s folder in the download cache"
+msgstr "다운로드 캐시에서 {shown} 폴더 열기"
+
 #: ../../apps/launcher/src/announcements-ui.tsx
 msgid "Open app"
 msgstr "앱 열기"
 
 #: ../../apps/launcher/src/App.tsx
+#: ../../apps/launcher/src/cache-page.tsx
 #: ../../apps/launcher/src/card-menu.tsx
 #: ../../apps/launcher/src/library-tile.tsx
 #: ../../apps/launcher/src/saves-tab.tsx

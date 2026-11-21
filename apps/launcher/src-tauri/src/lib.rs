@@ -281,10 +281,11 @@ fn cache_fetch_cancel(fetching: State<CacheFetching>) {
     }
 }
 
-/// What's in the download cache.
+/// What's in the download cache. `names`: apps' ids to their slugs, for files an older build kept without one, which
+/// move to their app's folder.
 #[tauri::command]
-async fn cache_status(dir: String) -> Result<cache::Status, String> {
-    tauri::async_runtime::spawn_blocking(move || cache::status(Path::new(&dir))).await.map_err(|e| e.to_string())
+async fn cache_status(dir: String, names: Option<std::collections::HashMap<String, String>>) -> Result<cache::Status, String> {
+    tauri::async_runtime::spawn_blocking(move || cache::status(Path::new(&dir), &names.unwrap_or_default())).await.map_err(|e| e.to_string())
 }
 
 /// Which of these files (`sha256:<hex>`) the download cache has.
@@ -316,6 +317,19 @@ fn cache_open(data: State<Data>) -> Result<(), String> {
     let dir = settings["cache"]["dir"].as_str().map(str::trim).filter(|d| !d.is_empty()).map(PathBuf::from).unwrap_or_else(|| data.0.join("cache"));
     std::fs::create_dir_all(&dir).map_err(|_| "Couldn't open the cache folder. Is its drive connected?".to_string())?;
     reveal(&dir)
+}
+
+/// Shows an app's folder in the download cache: in the cache folder settings.json names (as `cache_open`), where the
+/// index says its files are. Never another path.
+#[tauri::command]
+fn cache_open_app(data: State<Data>, app: String) -> Result<(), String> {
+    let settings: serde_json::Value = std::fs::read(state_file(&data, "settings")?)
+        .ok()
+        .and_then(|b| serde_json::from_slice(&b).ok())
+        .unwrap_or_default();
+    let dir = settings["cache"]["dir"].as_str().map(str::trim).filter(|d| !d.is_empty()).map(PathBuf::from).unwrap_or_else(|| data.0.join("cache"));
+    let folder = cache::app_folder(&dir, &app).ok_or("None of this app's files are in the download cache yet.")?;
+    reveal(&folder)
 }
 
 /// Installs under way, by app id: sending true cancels one.
@@ -2602,6 +2616,7 @@ pub fn run() {
             cache_trim,
             cache_remove,
             cache_open,
+            cache_open_app,
             read_state,
             write_state,
             state_problems,

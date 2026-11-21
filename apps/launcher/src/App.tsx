@@ -327,7 +327,7 @@ export function App() {
                 ) : view.kind === "downloads" ? (
                   <DownloadsPage back={backFrom(i)} onBack={goBack} onOpen={openApp} action={downloadAction} />
                 ) : view.kind === "settings" ? (
-                  <SettingsPage back={backFrom(i)} onBack={goBack} onRunSetup={() => setSettingUp(true)} start={view.section} />
+                  <SettingsPage back={backFrom(i)} onBack={goBack} onRunSetup={() => setSettingUp(true)} onOpen={openApp} start={view.section} />
                 ) : view.kind === "community" ? (
                   <CommunityPage back={backFrom(i)} onBack={goBack} />
                 ) : view.kind === "discussion" ? (

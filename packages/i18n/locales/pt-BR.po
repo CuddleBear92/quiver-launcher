@@ -4946,11 +4946,16 @@ msgstr "Abrir"
 msgid "Open {app} in the catalog's admin pages on quiverlauncher.com"
 msgstr "Abrir {app} na administração do catálogo em quiverlauncher.com"
 
+#: ../../apps/launcher/src/cache-page.tsx
+msgid "Open {shown}'s folder in the download cache"
+msgstr "Abrir a pasta de {shown} no cache de downloads"
+
 #: ../../apps/launcher/src/announcements-ui.tsx
 msgid "Open app"
 msgstr "Abrir app"
 
 #: ../../apps/launcher/src/App.tsx
+#: ../../apps/launcher/src/cache-page.tsx
 #: ../../apps/launcher/src/card-menu.tsx
 #: ../../apps/launcher/src/library-tile.tsx
 #: ../../apps/launcher/src/saves-tab.tsx

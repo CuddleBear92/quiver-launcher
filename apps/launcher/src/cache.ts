@@ -83,13 +83,13 @@ export function cacheOf(saved: CacheSettings | undefined, defaultDir: string) {
 export type Cache = ReturnType<typeof cacheOf>;
 
 /** What an install asks of the cache (cache.rs's CacheUse): none while it's off. */
-export type CacheUse = { dir: string; keep: boolean; app: string; version: string; os?: Os; onlyThis?: boolean; limit?: number; protect: string[] };
+export type CacheUse = { dir: string; keep: boolean; app: string; version: string; os?: Os; slug?: string; onlyThis?: boolean; limit?: number; protect: string[] };
 
 /**
  * For an app's install: always taken from the cache when its file is there; kept there as the mode says (any install
  * but in Selected titles, where only those apps'). Installed only keeps an app's latest installed file alone.
  */
-export function cacheUse(cache: Cache, app: { id: string; version: string; os?: Os }, protect: string[]): CacheUse | undefined {
+export function cacheUse(cache: Cache, app: { id: string; version: string; os?: Os; slug?: string }, protect: string[]): CacheUse | undefined {
   if (!cache.on) return undefined;
   const keep = cache.mode !== "selected" || isSelected(cache, app.id);
   return {
@@ -98,6 +98,8 @@ export function cacheUse(cache: Cache, app: { id: string; version: string; os?: 
     app: app.id,
     version: app.version,
     ...(app.os && { os: app.os }),
+    // Its folder in the cache: `<slug>/<version>/<file>`.
+    ...(app.slug && { slug: app.slug }),
     ...(cache.mode === "installed" && { onlyThis: true }),
     ...(cache.limit !== undefined && { limit: cache.limit }),
     protect,
@@ -112,6 +114,10 @@ export function withSelected(saved: CacheSettings | undefined, app: { id: string
   const others = (saved?.apps ?? []).filter((a) => a.id !== app.id);
   return { ...saved, apps: on ? [...others, { id: app.id, slug: app.slug }] : others };
 }
+
+/** Apps' ids to their catalog slugs, which name their folders in the cache: the library's, and the selected titles'. */
+export const cacheNames = (catalog: Record<string, { slug: string }>, apps: { id: string; slug: string }[]) =>
+  Object.fromEntries([...Object.entries(catalog).map(([id, e]) => [id, e.slug] as const), ...apps.map((a) => [a.id, a.slug] as const)].filter(([, slug]) => slug));
 
 /** The files never rotated out: the versions installed now, by their checksums. */
 export const protectedFiles = (installs: Record<string, { checksum?: string }>) =>

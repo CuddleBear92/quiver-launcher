@@ -53,7 +53,7 @@ describe("a run of the cache's fetches", () => {
     expect(fetched.map((r) => r.filename)).toEqual(["a2.zip", "c9.zip"]);
     expect(done).toMatchObject({ running: false, apps: 3, fetched: 2, failed: 0, noRoom: 0 });
     // Into the cache alone, checked against its checksum, with the installed files kept safe.
-    expect(fetched[0]).toMatchObject({ checksum: sum("1"), version: "2", cache: { dir: "/cache", keep: true, app: "a", version: "2", protect: ["sha256:installed"] } });
+    expect(fetched[0]).toMatchObject({ checksum: sum("1"), version: "2", cache: { dir: "/cache", keep: true, app: "a", slug: "a", version: "2", protect: ["sha256:installed"] } });
   });
 
   test("Hoarder: every release of every app", async () => {

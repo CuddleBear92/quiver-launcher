@@ -119,7 +119,7 @@ export type InstallRequest = {
   cache?: CacheUse;
 };
 /** A file in the download cache (cache.rs). */
-export type CachedFile = { hash: string; filename: string; size: number; apps: { app: string; version: string; os?: string }[]; cachedAt: number; usedAt: number };
+export type CachedFile = { hash: string; filename: string; path: string; size: number; apps: { app: string; version: string; os?: string; slug?: string }[]; cachedAt: number; usedAt: number };
 export type CacheStatus = { files: number; bytes: number; entries: CachedFile[] };
 /** What an install did. A Windows installer (MSI) puts its files where its setup chose. */
 export type Installed = {
@@ -325,7 +325,8 @@ export const native = {
   cacheFetchCancel: () => invoke<void>("cache_fetch_cancel"),
   onCacheProgress: (handler: (p: { id: string; received: number; total?: number | null }) => void) =>
     listen<{ id: string; received: number; total?: number | null }>("cache-progress", (e) => handler(e.payload)),
-  cacheStatus: (dir: string) => invoke<CacheStatus>("cache_status", { dir }),
+  /** What's in the cache. `names`, apps' ids to their slugs, names the folders of files an older build kept by hash, which move to them. */
+  cacheStatus: (dir: string, names?: Record<string, string>) => invoke<CacheStatus>("cache_status", { dir, names: names ?? null }),
   cacheHas: (dir: string, checksums: string[]) => invoke<boolean[]>("cache_has", { dir, checksums }),
   /** Rotates the cache down to `limit` bytes (null: no limit), never the files of `protect`. */
   cacheTrim: (dir: string, limit: number | null, protect: string[]) => invoke<void>("cache_trim", { dir, limit, protect }),
@@ -333,6 +334,8 @@ export const native = {
   cacheRemove: (dir: string, hashes?: string[]) => invoke<void>("cache_remove", { dir, hashes: hashes ?? null }),
   /** Shows the cache folder settings.json names, else the default one. */
   cacheOpen: () => invoke<void>("cache_open"),
+  /** Shows an app's folder in the cache; fails while none of its files are kept. */
+  cacheOpenApp: (app: string) => invoke<void>("cache_open_app", { app }),
   /** Starts an app; `id` names it in `onAppClosed` once it closes. `presence` is what Discord shows the player playing while it runs. */
   launch: (id: string | undefined, folder: string, dir: string | undefined, preferred: string[], wine: boolean, program?: string, launch?: LaunchOptions, presence?: DiscordGame) =>
     invoke<void>("launch", { id, folder, dir, preferred, wine, program, launch, presence }),

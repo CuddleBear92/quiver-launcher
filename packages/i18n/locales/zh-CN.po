@@ -4946,11 +4946,16 @@ msgstr "打开"
 msgid "Open {app} in the catalog's admin pages on quiverlauncher.com"
 msgstr "在 quiverlauncher.com 的目录管理后台打开 {app}"
 
+#: ../../apps/launcher/src/cache-page.tsx
+msgid "Open {shown}'s folder in the download cache"
+msgstr "打开下载缓存中 {shown} 的文件夹"
+
 #: ../../apps/launcher/src/announcements-ui.tsx
 msgid "Open app"
 msgstr "打开应用"
 
 #: ../../apps/launcher/src/App.tsx
+#: ../../apps/launcher/src/cache-page.tsx
 #: ../../apps/launcher/src/card-menu.tsx
 #: ../../apps/launcher/src/library-tile.tsx
 #: ../../apps/launcher/src/saves-tab.tsx

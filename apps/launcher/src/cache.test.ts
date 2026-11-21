@@ -1,6 +1,6 @@
 import { describe, expect, test } from "vitest";
 import type { Asset, Release } from "@quiverlauncher/api";
-import { DEFAULT_LIMIT_GB, cacheOf, cacheTargets, cacheUse, fits, installedTargets, isSelected, protectedFiles, sameVersion, withSelected } from "./cache";
+import { DEFAULT_LIMIT_GB, cacheNames, cacheOf, cacheTargets, cacheUse, fits, installedTargets, isSelected, protectedFiles, sameVersion, withSelected } from "./cache";
 
 const GB = 1024 ** 3;
 const sum = (c: string) => `sha256:${c.repeat(64)}`;
@@ -99,4 +99,9 @@ describe("Installed only's files of an installed app", () => {
     expect(sameVersion("v1.2", "1.2")).toBe(true);
     expect(sameVersion("1.2", "1.20")).toBe(false);
   });
+});
+
+test("an app's files go in its slug's folder, the selected titles' and the library's named for it", () => {
+  expect(cacheUse(cacheOf({ mode: "installed" }, "/c"), { id: "k17", version: "1", slug: "ship-of-harkinian" }, [])?.slug).toBe("ship-of-harkinian");
+  expect(cacheNames({ a: { slug: "app-a" }, own: { slug: "" } }, [{ id: "b", slug: "app-b" }])).toEqual({ a: "app-a", b: "app-b" });
 });

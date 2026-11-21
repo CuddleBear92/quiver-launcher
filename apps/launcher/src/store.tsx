@@ -2454,7 +2454,7 @@ function LauncherState({ saved, children }: { saved: Saved; children: ReactNode 
         version: release.version,
         preferred: executables,
         program: was?.installer ? was.program : undefined,
-        ...(cacheNow && { cache: cacheUse(cacheNow, { id: entry.id, version: release.version, os: asset.os }, protectedFiles(installs)) }),
+        ...(cacheNow && { cache: cacheUse(cacheNow, { id: entry.id, version: release.version, os: asset.os, slug: entry.slug }, protectedFiles(installs)) }),
       });
       // Installed only, keeping every system's files: the release's other builds come once it's in, in the background.
       if (cacheNow?.mode === "installed" && cacheNow.allPlatforms && !custom) requestCache([entry.id]);

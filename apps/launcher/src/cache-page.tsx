@@ -8,7 +8,7 @@ import { plural, t } from "@lingui/core/macro";
 import { Trans } from "@lingui/react/macro";
 import { i18n } from "@quiverlauncher/i18n";
 import { Field } from "@quiverlauncher/ui/controls";
-import { CACHE_MODES, LIMITS_GB, cacheOf, fetches, isSelected, protectedFiles, withSelected, type CacheMode, type CacheSettings } from "./cache";
+import { CACHE_MODES, LIMITS_GB, cacheNames, cacheOf, fetches, isSelected, protectedFiles, withSelected, type CacheMode, type CacheSettings } from "./cache";
 import { isOwn } from "./custom";
 import { fetchNow, useFetchState } from "./cache-fetch";
 import { sizeLabel } from "./downloads";
@@ -35,8 +35,9 @@ function limitName(gb: number) {
   return gb >= 1000 ? t({ message: `${tb} TB`, comment: "A storage size in terabytes" }) : t({ message: `${gb} GB`, comment: "A storage size in gigabytes" });
 }
 
-export function CacheSettingsSection() {
-  const { settings, setSettings, config, installs } = useLauncher();
+/** `onOpen`: an app's page, from its row among the selected titles. */
+export function CacheSettingsSection({ onOpen }: { onOpen: (entry: Entry) => void }) {
+  const { settings, setSettings, config, installs, catalog } = useLauncher();
   const cache = cacheOf(settings.cache, config.cacheDir ?? "");
   const [status, setStatus] = useState<CacheStatus | null>(null);
   const [said, setSaid] = useState<{ text: string; error?: true } | null>(null);
@@ -46,8 +47,8 @@ export function CacheSettingsSection() {
 
   const load = useCallback(() => {
     if (!cache.dir) return;
-    native.cacheStatus(cache.dir).then(setStatus, () => setStatus(null));
-  }, [cache.dir]);
+    native.cacheStatus(cache.dir, cacheNames(catalog, cache.apps)).then(setStatus, () => setStatus(null));
+  }, [cache.dir]); // eslint-disable-line react-hooks/exhaustive-deps
   // Read again as files come in, and when a run ends.
   useEffect(load, [load, fetch.fetched, fetch.running]);
 
@@ -185,7 +186,15 @@ export function CacheSettingsSection() {
           </button>
         ))}
       {said && <p className={said.error ? "save-said error" : "save-said"}>{said.text}</p>}
-      {cache.mode === "selected" && <SelectedTitles apps={cache.apps} kept={status?.entries ?? []} onRemove={(app) => set((c) => withSelected(c, app, false))} />}
+      {cache.mode === "selected" && (
+        <SelectedTitles
+          apps={cache.apps}
+          kept={status?.entries ?? []}
+          onOpen={onOpen}
+          onFolder={(id) => void native.cacheOpenApp(id).catch((e) => setSaid({ text: String(e), error: true }))}
+          onRemove={(app) => set((c) => withSelected(c, app, false))}
+        />
+      )}
     </section>
   );
 }
@@ -255,7 +264,19 @@ function FetchProgress({ manual }: { manual: boolean }) {
  * cache its files take, the largest first, in a box that scrolls past a few. Each can be taken off here; they're
  * added from Manage on an app's page or its menu.
  */
-function SelectedTitles({ apps, kept, onRemove }: { apps: { id: string; slug: string }[]; kept: CachedFile[]; onRemove: (app: { id: string; slug: string }) => void }) {
+function SelectedTitles({
+  apps,
+  kept,
+  onOpen,
+  onFolder,
+  onRemove,
+}: {
+  apps: { id: string; slug: string }[];
+  kept: CachedFile[];
+  onOpen: (entry: Entry) => void;
+  onFolder: (id: string) => void;
+  onRemove: (app: { id: string; slug: string }) => void;
+}) {
   const { catalog, client } = useLauncher();
   // The catalog's details of the ones that aren't in the library, for their pictures and names.
   const [looked, setLooked] = useState<Record<string, Entry | null>>({});
@@ -294,16 +315,22 @@ function SelectedTitles({ apps, kept, onRemove }: { apps: { id: string; slug: st
             const art = entry && coverOf(entry);
             return (
               <li key={app.id} className="download-row">
-                <span className="download-thumb">
+                {/* The picture and the name open the app's page, as Downloads' rows do: the picture for a controller too. */}
+                <button type="button" className="download-thumb" aria-label={shown} disabled={!entry} onClick={() => entry && onOpen(entry)}>
                   <Artwork src={art} sources={art ? cardSources(art, "100px") : undefined} name={shown} className={entry?.libraryArt?.header || entry?.libraryArt?.capsule ? "cover-photo" : ""} />
-                </span>
+                </button>
                 <div className="download-names">
-                  <span className="download-name">{shown}</span>
+                  <button type="button" className="download-name" tabIndex={-1} disabled={!entry} onClick={() => entry && onOpen(entry)}>
+                    {shown}
+                  </button>
                   <span className="download-detail">
                     {files ? [size, plural(files, { one: "# file", other: "# files" })].join(" · ") : t({ message: "Not kept yet", comment: "Settings › Cache: a selected app none of whose files are in the cache yet" })}
                   </span>
                 </div>
                 <div className="download-action">
+                  <button type="button" className="save-button" aria-label={t`Open ${shown}'s folder in the download cache`} title={t`Open folder`} disabled={!files} onClick={() => onFolder(app.id)}>
+                    <FolderOpen size={14} aria-hidden="true" />
+                  </button>
                   <button type="button" className="save-button" aria-label={t`Stop keeping ${shown}`} onClick={() => onRemove(app)}>
                     <X size={14} aria-hidden="true" />
                   </button>

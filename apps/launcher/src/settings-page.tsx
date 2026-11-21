@@ -35,6 +35,7 @@ import { CacheSettingsSection } from "./cache-page";
 import { SyncFolderSettings } from "./sync-folder-page";
 import { ConsoleFolders } from "./console-folders";
 import type { Theme } from "./theme";
+import type { Entry } from "@quiverlauncher/api";
 import { INTERFACE_SIZES } from "./zoom";
 import { GameCopySettings } from "./own-copy-settings";
 import { foldersOn, useConsolePicks } from "./detail";
@@ -70,7 +71,20 @@ function useSideBySide() {
 }
 
 /** `onRunSetup` opens the first start's setup (setup.tsx) again, from General. `start`: a section to open on. */
-export function SettingsPage({ back, onBack, onRunSetup, start }: { back: string; onBack: () => void; onRunSetup: () => void; start?: Section }) {
+export function SettingsPage({
+  back,
+  onBack,
+  onRunSetup,
+  onOpen,
+  start,
+}: {
+  back: string;
+  onBack: () => void;
+  onRunSetup: () => void;
+  /** An app's page, from the download cache's selected titles. */
+  onOpen: (entry: Entry) => void;
+  start?: Section;
+}) {
   const sideBySide = useSideBySide();
   const { config } = useLauncher();
   // Game copies are for computers: a phone keeps an app's files to itself.
@@ -148,7 +162,7 @@ export function SettingsPage({ back, onBack, onRunSetup, start }: { back: string
                 <SyncFolderSettings />
               </>
             ) : section === "cache" ? (
-              <CacheSettingsSection />
+              <CacheSettingsSection onOpen={onOpen} />
             ) : section === "controllers" ? (
               <ControlSettings />
             ) : section === "updates" ? (

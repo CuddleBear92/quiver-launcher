@@ -8,7 +8,7 @@
 import { useEffect, useRef, useSyncExternalStore } from "react";
 import { cacheAsk, requestCache, subscribeCacheAsk } from "./cache-signal";
 import type { Client, Entry, Os, Release } from "@quiverlauncher/api";
-import { cacheOf, cacheTargets, fetches, fits, installedTargets, protectedFiles, sameVersion, type Cache, type CacheTarget, type CacheUse } from "./cache";
+import { cacheNames, cacheOf, cacheTargets, fetches, fits, installedTargets, protectedFiles, sameVersion, type Cache, type CacheTarget, type CacheUse } from "./cache";
 import { native, type CacheStatus, type InstallRequest } from "./native";
 import { catalogOs, useLauncher } from "./store";
 import { isOwn } from "./custom";
@@ -121,6 +121,7 @@ export function fetchRequest(target: CacheTarget, cache: Cache, protect: string[
     app: target.app,
     version: target.version,
     os: target.asset.os,
+    slug: target.slug,
     // Installed only keeps an app's installed version alone.
     ...(cache.mode === "installed" && { onlyThis: true }),
     ...(cache.limit !== undefined && { limit: cache.limit }),
@@ -259,6 +260,10 @@ export function useDownloadCache() {
       }).catch(() => {}),
     [],
   );
+  // Files an older build kept by hash moved to their apps' folders, once, as soon as the launcher starts.
+  useEffect(() => {
+    if (cache.on) void native.cacheStatus(cache.dir, cacheNames(now.current.catalog, cache.apps)).catch(() => {});
+  }, [cache.on, cache.dir]); // eslint-disable-line react-hooks/exhaustive-deps
   useCacheFetcher(
     cache,
     {

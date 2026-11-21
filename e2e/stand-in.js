@@ -48,6 +48,7 @@ export function standInForRust({ api, state = {}, config: more = {}, maximized =
       await window.__cache.onFetch?.(request, window.__cache.fetched.length);
     },
     cache_remove: () => void (window.__cache.files = []),
+    cache_open_app: ({ app }) => void window.__opened.push(`cache:${app}`),
     config: () => config,
     // The computer's PC specs (specs.rs), unless a test's config says otherwise (`pcSpecs`).
     pc_specs: () => more.pcSpecs ?? { cpu: "AMD Ryzen 5 5600", gpu: "AMD Radeon RX 6600", ramGb: 16 },

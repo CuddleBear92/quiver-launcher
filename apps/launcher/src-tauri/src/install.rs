@@ -1222,7 +1222,7 @@ mod tests {
             }
         }));
         assert_eq!(result, Err(BLOCKED.to_string()));
-        assert_eq!(crate::cache::status(&cache).files, 0);
+        assert_eq!(crate::cache::status(&cache, &Default::default()).files, 0);
         // Nothing left behind for the next fetch.
         assert!(!cache.join(".incoming").join("bad-app").exists());
     }
