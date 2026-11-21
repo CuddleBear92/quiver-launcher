@@ -47,7 +47,7 @@ export function standInForRust({ api, state = {}, config: more = {}, maximized =
       window.__cache.fetched.push(request);
       await window.__cache.onFetch?.(request, window.__cache.fetched.length);
     },
-    cache_remove: () => void (window.__cache.files = []),
+    cache_remove: ({ hashes }) => void (window.__cache.files = hashes ? window.__cache.files.filter((f) => !hashes.includes(f.hash)) : []),
     cache_clean: () => 0,
     cache_open_app: ({ app }) => void window.__opened.push(`cache:${app}`),
     config: () => config,

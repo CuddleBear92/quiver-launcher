@@ -165,5 +165,17 @@ export function installedTargets(entry: Pick<Entry, "id" | "slug" | "projectName
 /** The same version, written either way ("v1.2" and "1.2"). */
 export const sameVersion = (a: string, b: string) => a.trim().replace(/^v/i, "") === b.trim().replace(/^v/i, "");
 
+/**
+ * The files no longer kept for anything, which Clear orphans takes away when the player asks: in Selected titles, those
+ * of no app still selected; in Installed only, those of no app installed now. Never one an app still selected or
+ * installed shares, nor a file of a version installed now (`protect`). None in the modes that keep the whole catalog.
+ */
+export function orphans<F extends { hash: string; apps: { app: string }[] }>(files: readonly F[], cache: Pick<Cache, "mode" | "apps">, installed: readonly string[], protect: readonly string[]): F[] {
+  const kept = cache.mode === "selected" ? new Set(cache.apps.map((a) => a.id)) : cache.mode === "installed" ? new Set(installed) : null;
+  if (!kept) return [];
+  const safe = new Set(protect.map((c) => c.replace(/^sha256:/i, "").toLowerCase()));
+  return files.filter((f) => !safe.has(f.hash) && !f.apps.some((o) => kept.has(o.app)));
+}
+
 /** Whether a file fits in the room left, so a fetch never pushes out what's kept to make room for more. */
 export const fits = (asset: Pick<Asset, "size">, used: number, limit?: number) => limit === undefined || used + (asset.size ?? 0) <= limit;

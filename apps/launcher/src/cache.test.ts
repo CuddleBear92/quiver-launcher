@@ -1,6 +1,6 @@
 import { describe, expect, test } from "vitest";
 import type { Asset, Release } from "@quiverlauncher/api";
-import { DEFAULT_LIMIT_GB, cacheNames, cacheOf, cacheTargets, cacheUse, fits, installedTargets, isSelected, protectedFiles, sameVersion, withSelected } from "./cache";
+import { DEFAULT_LIMIT_GB, cacheNames, cacheOf, orphans, cacheTargets, cacheUse, fits, installedTargets, isSelected, protectedFiles, sameVersion, withSelected } from "./cache";
 
 const GB = 1024 ** 3;
 const sum = (c: string) => `sha256:${c.repeat(64)}`;
@@ -104,4 +104,22 @@ describe("Installed only's files of an installed app", () => {
 test("an app's files go in its slug's folder, the selected titles' and the library's named for it", () => {
   expect(cacheUse(cacheOf({ mode: "installed" }, "/c"), { id: "k17", version: "1", slug: "ship-of-harkinian" }, [])?.slug).toBe("ship-of-harkinian");
   expect(cacheNames({ a: { slug: "app-a" }, own: { slug: "" } }, [{ id: "b", slug: "app-b" }])).toEqual({ a: "app-a", b: "app-b" });
+});
+
+describe("orphans: what Clear orphans takes", () => {
+  const f = (hash: string, ...apps: string[]) => ({ hash, apps: apps.map((app) => ({ app })) });
+  const files = [f("a1", "a"), f("b1", "b"), f("shared", "a", "c"), f("c1", "c"), f("installed-c", "c")];
+  const hashes = (list: { hash: string }[]) => list.map((x) => x.hash);
+  test("Selected titles: the files of apps no longer selected, not one a selected app shares", () => {
+    expect(hashes(orphans(files, cacheOf({ mode: "selected", apps: [{ id: "a", slug: "a" }] }, "/c"), [], []))).toEqual(["b1", "c1", "installed-c"]);
+  });
+  test("Installed only: the files of apps not installed now", () => {
+    expect(hashes(orphans(files, cacheOf({ mode: "installed" }, "/c"), ["b"], []))).toEqual(["a1", "shared", "c1", "installed-c"]);
+  });
+  test("never a file of a version installed now", () => {
+    expect(hashes(orphans(files, cacheOf({ mode: "selected", apps: [] }, "/c"), [], [`sha256:INSTALLED-C`.replace("INSTALLED-C", "installed-c")]))).not.toContain("installed-c");
+  });
+  test("nothing in the modes that keep the whole catalog, nor while off", () => {
+    for (const mode of ["latest", "hoarder", "none"] as const) expect(orphans(files, cacheOf({ mode }, "/c"), [], [])).toEqual([]);
+  });
 });

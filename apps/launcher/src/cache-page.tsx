@@ -8,7 +8,7 @@ import { plural, t } from "@lingui/core/macro";
 import { Trans } from "@lingui/react/macro";
 import { i18n } from "@quiverlauncher/i18n";
 import { Field } from "@quiverlauncher/ui/controls";
-import { CACHE_MODES, LIMITS_GB, cacheNames, cacheOf, fetches, isSelected, protectedFiles, withSelected, type CacheMode, type CacheSettings } from "./cache";
+import { CACHE_MODES, LIMITS_GB, cacheNames, cacheOf, orphans, fetches, isSelected, protectedFiles, withSelected, type CacheMode, type CacheSettings } from "./cache";
 import { isOwn } from "./custom";
 import { fetchNow, useFetchState } from "./cache-fetch";
 import { sizeLabel } from "./downloads";
@@ -42,6 +42,7 @@ export function CacheSettingsSection({ onOpen }: { onOpen: (entry: Entry) => voi
   const [status, setStatus] = useState<CacheStatus | null>(null);
   const [said, setSaid] = useState<{ text: string; error?: true } | null>(null);
   const [clearing, setClearing] = useState(false);
+  const [orphaning, setOrphaning] = useState(false);
   const fetch = useFetchState();
   const set = (change: (c: CacheSettings) => CacheSettings) => setSettings((s) => ({ ...s, cache: change(s.cache ?? {}) }));
 
@@ -73,6 +74,18 @@ export function CacheSettingsSection({ onOpen }: { onOpen: (entry: Entry) => voi
     load();
   };
 
+  // What Clear orphans would take: files of apps no longer selected, or no longer installed.
+  const loose = orphans(status?.entries ?? [], cache, Object.keys(installs), protectedFiles(installs));
+  const size = sizeLabel(loose.reduce((n, f) => n + f.size, 0));
+  const clearOrphans = async () => {
+    setOrphaning(false);
+    const count = loose.length;
+    await native.cacheRemove(cache.dir, loose.map((f) => f.hash)).then(
+      () => setSaid({ text: plural(count, { one: "# orphaned file was removed.", other: "# orphaned files were removed." }) }),
+      () => setSaid({ text: t`Couldn't remove the orphaned files. Is the cache's drive connected?`, error: true }),
+    );
+    load();
+  };
   const used = status?.bytes ?? 0;
   const [usedLabel, limitLabel] = [sizeLabel(used), sizeLabel(cache.limit ?? 0)];
   const mode = CACHE_MODES.find((m) => m.mode === cache.mode)!;
@@ -169,6 +182,32 @@ export function CacheSettingsSection({ onOpen }: { onOpen: (entry: Entry) => voi
           </button>
         )}
       </div>
+      {loose.length > 0 &&
+        (orphaning ? (
+          <div className="cache-clear">
+            <span>
+              {cache.mode === "selected"
+                ? plural(loose.length, {
+                    one: `Remove # file (${size}) of apps that aren't among your selected titles?`,
+                    other: `Remove # files (${size}) of apps that aren't among your selected titles?`,
+                  })
+                : plural(loose.length, {
+                    one: `Remove # file (${size}) of apps that aren't installed?`,
+                    other: `Remove # files (${size}) of apps that aren't installed?`,
+                  })}
+            </span>
+            <button type="button" className="danger" onClick={() => void clearOrphans()}>
+              <Trans comment="Button: removes the cache's files of apps it no longer keeps">Clear orphans</Trans>
+            </button>
+            <button type="button" onClick={() => setOrphaning(false)}>
+              <Trans>Cancel</Trans>
+            </button>
+          </div>
+        ) : (
+          <button type="button" className="text-button" onClick={() => (setClearing(false), setOrphaning(true))}>
+            <Trans comment="Button: asks first, then removes the cache's files of apps it no longer keeps">Clear orphans…</Trans>
+          </button>
+        ))}
       {Boolean(status?.files) &&
         (clearing ? (
           <div className="cache-clear">
@@ -181,7 +220,7 @@ export function CacheSettingsSection({ onOpen }: { onOpen: (entry: Entry) => voi
             </button>
           </div>
         ) : (
-          <button type="button" className="text-button" onClick={() => setClearing(true)}>
+          <button type="button" className="text-button" onClick={() => (setOrphaning(false), setClearing(true))}>
             <Trans>Clear cache…</Trans>
           </button>
         ))}

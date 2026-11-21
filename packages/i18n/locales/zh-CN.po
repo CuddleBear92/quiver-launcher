@@ -150,6 +150,16 @@ msgstr "{0, plural, other {个我的标签}}"
 msgid "{0, plural, one {Platforms: # app hidden} other {Platforms: # apps hidden}}"
 msgstr "{0, plural, one {平台：隐藏了 # 个应用} other {平台：隐藏了 # 个应用}}"
 
+#. placeholder {0}: loose.length
+#: ../../apps/launcher/src/cache-page.tsx
+msgid "{0, plural, one {Remove # file ({size}) of apps that aren't among your selected titles?} other {Remove # files ({size}) of apps that aren't among your selected titles?}}"
+msgstr "{0, plural, other {要删除不在所选作品中的应用的 # 个文件（{size}）吗？}}"
+
+#. placeholder {0}: loose.length
+#: ../../apps/launcher/src/cache-page.tsx
+msgid "{0, plural, one {Remove # file ({size}) of apps that aren't installed?} other {Remove # files ({size}) of apps that aren't installed?}}"
+msgstr "{0, plural, other {要删除未安装应用的 # 个文件（{size}）吗？}}"
+
 #. placeholder {0}: others.length
 #: ../../apps/launcher/src/own-copy-setup.tsx
 msgid "{0, plural, one {Show # other file} other {Show # other files}}"
@@ -294,6 +304,10 @@ msgstr "{count, plural, other {# 个副本}}"
 #: ../../apps/launcher/src/discussions.tsx
 msgid "{count, plural, one {# discussion with new comments} other {# discussions with new comments}}"
 msgstr "{count, plural, other {# 个讨论有新评论}}"
+
+#: ../../apps/launcher/src/cache-page.tsx
+msgid "{count, plural, one {# orphaned file was removed.} other {# orphaned files were removed.}}"
+msgstr "{count, plural, other {已删除 # 个孤立文件。}}"
 
 #: ../../apps/launcher/src/library-ticking.tsx
 msgid "{count, plural, one {# selected} other {# selected}}"
@@ -2186,6 +2200,16 @@ msgstr "清空缓存…"
 msgid "Clear list"
 msgstr "清空列表"
 
+#. Button: removes the cache's files of apps it no longer keeps
+#: ../../apps/launcher/src/cache-page.tsx
+msgid "Clear orphans"
+msgstr "清理孤立文件"
+
+#. Button: asks first, then removes the cache's files of apps it no longer keeps
+#: ../../apps/launcher/src/cache-page.tsx
+msgid "Clear orphans…"
+msgstr "清理孤立文件…"
+
 #: ../../apps/launcher/src/App.tsx
 #: ../../apps/launcher/src/library.tsx
 msgid "Clear search"
@@ -2405,6 +2429,10 @@ msgstr "无法连接到你的云存档。备份暂时保留在这台电脑上。
 #: ../../apps/launcher/src/saves-tab.tsx
 msgid "Couldn't reach your cloud saves. Check your connection and try again."
 msgstr "无法连接到你的云存档。请检查网络连接后重试。"
+
+#: ../../apps/launcher/src/cache-page.tsx
+msgid "Couldn't remove the orphaned files. Is the cache's drive connected?"
+msgstr "无法删除孤立文件。缓存所在的驱动器已连接吗？"
 
 #: ../../apps/launcher/src/github-token.tsx
 #: ../../apps/launcher/src/gitlab-token.tsx
